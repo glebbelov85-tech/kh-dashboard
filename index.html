@@ -217,7 +217,14 @@ section.view{animation:rise .35s ease both}
 .crop details .list{margin-top:8px}
 .spark svg{width:100%;height:auto;display:block}
 /* фото */
-.lightbox{position:fixed;inset:0;background:rgba(10,14,12,.97);z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.lightbox{position:fixed;inset:0;background:rgba(10,14,12,.97);z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:safe center;gap:12px;overflow-y:auto;overscroll-behavior:contain;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(72px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.lightbox>*{flex-shrink:0}
+.lightbox.fs{padding:0;justify-content:center;overflow:hidden;background:#000}
+.lightbox.fs .lbmap,.lightbox.fs .hint,.lightbox.fs .lc,.lightbox.fs .nav{display:none}
+.lightbox.fs .lbwrap{max-width:100vw}
+.lightbox.fs .lbz{border-radius:0;max-height:100vh;max-height:100dvh}
+.lightbox.fs .lbz img{max-width:100vw;max-height:100vh;max-height:100dvh}
+.lightbox.fs .lbzb{top:calc(60px + env(safe-area-inset-top,0px));bottom:auto}
 [hidden]{display:none!important}
 .lbmain{display:flex;gap:14px;align-items:center;justify-content:center;max-width:100%}
 .lbwrap{position:relative;min-width:0;max-width:calc(100vw - 32px - 314px)}
@@ -230,13 +237,13 @@ section.view{animation:rise .35s ease both}
 .lbms{position:relative}.lbmz{position:absolute;left:6px;top:6px;display:flex;flex-direction:column;gap:4px}.lbmz button{width:32px;height:32px;border-radius:7px;border:0;background:rgba(15,20,17,.78);color:#fff;font:inherit;font-size:18px;font-weight:700;cursor:pointer;display:grid;place-items:center}.lbmz button:hover{background:rgba(15,20,17,.94)}.lbmz button:disabled{opacity:.35;cursor:default}
 .lbmap .mc{color:#aab3ad;font-size:12px;line-height:1.35}
 .lbmap .mc b{color:#e8ece6}
-@media (max-width:820px){.lbmain{flex-direction:column;gap:8px}.lbwrap{max-width:100%}.lbmap{width:min(220px,60vw)}.lbmap svg{width:min(220px,60vw);height:min(220px,60vw)}.lbz,.lbz img{max-height:52vh}.lbzb{top:auto;bottom:8px}}
+@media (max-width:820px){.lightbox{justify-content:flex-start}.lightbox.fs{justify-content:center}.lbmain{flex-direction:column;gap:8px}.lbwrap{max-width:100%}.lbmap{width:min(220px,60vw)}.lbmap svg{width:min(220px,60vw);height:min(220px,60vw)}.lbz,.lbz img{max-height:52vh}.lbzb{top:auto;bottom:8px}}
 .lbz.on{cursor:grab}
 .lbz img{display:block;max-width:100%;max-height:72vh;object-fit:contain;transform-origin:0 0;user-select:none;-webkit-user-drag:none}
 .lightbox .hint{color:#aab3ad;font-size:12px}
 .lightbox .lc{color:#e8ece6;max-width:70ch;font-size:15px;text-align:center}
 .lightbox .lc b{display:block;color:#fff}
-.lightbox .x{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:20px;cursor:pointer}
+.lightbox .x{position:fixed;z-index:3;top:calc(10px + env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:20px;cursor:pointer}
 .lightbox .nav{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .lightbox .nav button,.lightbox .nav a{text-decoration:none;border:1px solid rgba(255,255,255,.3);background:none;color:#fff;border-radius:999px;padding:7px 16px;font:inherit;font-weight:700;cursor:pointer}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -621,18 +628,27 @@ function bindPhotos(root, list){ root.querySelectorAll("[data-ph]").forEach(b =>
 function openLB(k, list){
   list = list || M.photos.map((_,i)=>i); let pos = list.indexOf(k); const lb = $("#lb");
   const draw = () => { const p = M.photos[list[pos]]; const g = GR[p.g]; const f = fieldByName[g.f[0]];
-    lb.innerHTML = `<button class="x" aria-label="Закрыть">&times;</button><div class="lbmain"><div class="lbwrap"><div class="lbz"><img src="${p.big || p.img}" alt="${esc(g.t)}" draggable="false"></div><div class="lbzb"><button data-zz="in" aria-label="Приблизить" title="Приблизить">+</button><button data-zz="out" aria-label="Отдалить" title="Отдалить">&minus;</button><button data-zz="reset" aria-label="Всё фото" title="Всё фото" style="font-size:15px">&#x2922;</button></div></div>${photoMap(p, f)}</div><span class="hint">Кнопки + и &minus;, двойное нажатие, колесо мыши или два пальца - приблизить. Фото можно двигать.</span><p class="lc"><b>${esc(g.t)} · ${esc(g.vt)}</b>${esc(g.ph)}</p><div class="nav">${list.length>1?`<button data-d="-1" aria-label="Предыдущее фото">&larr;</button><button data-d="1" aria-label="Следующее фото">&rarr;</button>`:""}${f?`<button data-open="${f.i}">Карточка поля</button>`:""}${p.orig?`<button data-full>Полное качество</button><a href="${esc(p.orig)}" rel="noopener">Скачать оригинал</a>`:""}</div>`;
+    lb.innerHTML = `<button class="x" aria-label="Закрыть">&times;</button><div class="lbmain"><div class="lbwrap"><div class="lbz"><img src="${p.big || p.img}" alt="${esc(g.t)}" draggable="false"></div><div class="lbzb"><button data-zz="in" aria-label="Приблизить" title="Приблизить">+</button><button data-zz="out" aria-label="Отдалить" title="Отдалить">&minus;</button><button data-zz="reset" aria-label="Всё фото" title="Всё фото" style="font-size:15px">&#x2922;</button><button data-fs aria-label="На весь экран" title="На весь экран" style="font-size:16px">&#x26F6;</button></div></div>${photoMap(p, f)}</div><span class="hint">Кнопки + и &minus;, двойное нажатие, колесо мыши или два пальца - приблизить. Фото можно двигать.</span><p class="lc"><b>${esc(g.t)} · ${esc(g.vt)}</b>${esc(g.ph)}</p><div class="nav">${list.length>1?`<button data-d="-1" aria-label="Предыдущее фото">&larr;</button><button data-d="1" aria-label="Следующее фото">&rarr;</button>`:""}${f?`<button data-open="${f.i}">Карточка поля</button>`:""}${p.orig?`<button data-full>Полное качество</button><a href="${esc(p.orig)}" rel="noopener">Скачать оригинал</a>`:""}</div>`;
     $(".x",lb).onclick = close; lb.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { pos = (pos + +b.dataset.d + list.length) % list.length; draw(); });
     const o = $("[data-open]",lb); if (o) o.onclick = () => { close(); go("f-"+o.dataset.open); };
     const zm = zoomable($(".lbz",lb)); lb.querySelectorAll("[data-zz]").forEach(b => b.onclick = () => zm[b.dataset.zz]());
+    { const sb = $("[data-fs]", lb); sb.title = sb.ariaLabel = fsOn ? "Выйти из полного экрана" : "На весь экран";
+      sb.onclick = () => setFs(!fsOn); }
     { const fb = $("[data-full]", lb); if (fb) fb.onclick = () => { const im = $(".lbz img", lb); fb.disabled = true; fb.textContent = "Загружаю...";
         const pre = new Image(); pre.referrerPolicy = "no-referrer";
         pre.onload = () => { im.src = p.orig; fb.textContent = "Полное качество ✓"; };
         pre.onerror = () => { fb.textContent = "Не загрузилось"; fb.disabled = false; }; pre.src = p.orig; }; }
     const bindMap = () => lb.querySelectorAll("[data-mz]").forEach(b => b.onclick = () => { mapLv = Math.max(0, Math.min(MAPR.length-1, mapLv + +b.dataset.mz)); $(".lbmap",lb).outerHTML = photoMap(p, f); bindMap(); });
     bindMap(); };
-  const close = () => { lb.hidden = true; document.removeEventListener("keydown", key); };
-  const key = e => { if (e.key==="Escape") close(); if (e.key==="ArrowRight"&&list.length>1){pos=(pos+1)%list.length;draw();} if (e.key==="ArrowLeft"&&list.length>1){pos=(pos-1+list.length)%list.length;draw();} };
+  let fsOn = false;
+  const setFs = on => { fsOn = on; lb.classList.toggle("fs", on);
+    try { if (on && !document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+          if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
+    draw(); };
+  document.onfullscreenchange = () => { if (!document.fullscreenElement && fsOn && !lb.hidden) { fsOn = false; lb.classList.remove("fs"); draw(); } };
+  const close = () => { if (fsOn) { fsOn = false; lb.classList.remove("fs"); try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {} }
+    lb.hidden = true; document.removeEventListener("keydown", key); };
+  const key = e => { if (e.key==="Escape") { if (fsOn) setFs(false); else close(); return; } if (e.key==="ArrowRight"&&list.length>1){pos=(pos+1)%list.length;draw();} if (e.key==="ArrowLeft"&&list.length>1){pos=(pos-1+list.length)%list.length;draw();} };
   document.addEventListener("keydown", key); lb.onclick = e => { if (e.target === lb) close(); };
   draw(); lb.hidden = false;
 }
