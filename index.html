@@ -237,7 +237,7 @@ section.view{animation:rise .35s ease both}
 .lightbox .lc{color:#e8ece6;max-width:70ch;font-size:15px;text-align:center}
 .lightbox .lc b{display:block;color:#fff}
 .lightbox .x{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:20px;cursor:pointer}
-.lightbox .nav{display:flex;gap:10px}
+.lightbox .nav{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .lightbox .nav button,.lightbox .nav a{text-decoration:none;border:1px solid rgba(255,255,255,.3);background:none;color:#fff;border-radius:999px;padding:7px 16px;font:inherit;font-weight:700;cursor:pointer}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;cursor:pointer}
@@ -315,7 +315,7 @@ function BOOT(){
     <button class="btn" style="justify-content:center;padding:10px">Открыть</button><span id="msg" class="note"></span></form>`;
   const msg = document.getElementById("msg");
   const open = async code => {
-    msg.textContent = "Открываю...";
+    msg.textContent = "Открываю, на телефоне это может занять до 20 секунд...";
     try {
       const r = await fetch("data.enc", {cache: "no-cache"}); if (!r.ok) throw new Error("file");
       window.DASH = JSON.parse(await tkDecrypt(await r.arrayBuffer(), code));
