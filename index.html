@@ -449,7 +449,6 @@ function viewMain(){
   const haOf = a => a.reduce((s,f)=>s+f.ha,0);
   const attn = bad.slice().sort((a,b) => (b.zh - a.zh) || ((a.jul??0) - (b.jul??0)));
   app.innerHTML = `<section class="view">
-    ${RT.оговорка ? `<p class="caveat" style="margin-top:16px"><b>Важно.</b> Архив данных хозяйства только начинает собираться: цифры надёжны, а причины пока версии для проверки. С каждым сезоном выводы будут точнее. <a href="#rec">Выводы и рекомендации</a></p>` : ""}
     <p class="lead">Сезон 2026 в целом прошёл ровно. Слабые участки нашлись на <b>${nf(zoneHa)} га</b>, это ${nf(zoneHa/sownHa*100,1)}% посевов. Внимания требуют <b>${bad.length} полей</b>, ещё ${warn.length} стоит осмотреть при случае.</p>
     <div class="tiles reveal" style="margin-top:16px">
       <div class="tile ok"><b data-n="${ok.length}">0</b><span>полей в норме, ${nf(haOf(ok))} га</span></div>
@@ -590,14 +589,14 @@ function viewField(i){
   const say = f.st === "ok" ? "Поле прошло сезон на уровне соседних полей той же культуры. Слабых участков не найдено."
     : f.st === "none" ? "Поле без посева в 2026 году (пар или культура не указана)." : (f.why || "Отставало от соседних полей.");
   // ok-поле с оговоркой
-  const say2 = f.st === "ok" && f.lbl === "оговорка" && f.note ? " Оговорка: " + f.note + "." : "";
+  const say2 = f.st === "ok" && f.lbl === "оговорка" && f.note ? " Примечание: " + f.note + "." : "";
   app.innerHTML = `<section class="view stack">
     <button class="back" id="back">&larr; Назад</button>
     <div class="fhead"><h2>${esc(f.n)}</h2><span class="badge ${f.st}">${ST[f.st]}</span></div>
     <div class="facts"><span><b>${esc(cap(f.c))}</b></span><span>${nf(f.ha,1)} га</span>${sowTxt?`<span>${sowTxt}</span>`:""}${peak?`<span>пик зелени <b>${nf(peak,2)}</b></span>`:""}${npts?`<span>фото дрона: <b>${npts}</b></span>`:""}</div>
     <p class="say">${esc(say + say2)}</p>
     ${f.jc && f.c && f.jc.toUpperCase() !== f.c.toUpperCase() ? `<p class="note">В базе культура "${esc(cap(f.c).toLowerCase())}", по журналу работ - "${esc(cap(f.jc).toLowerCase())}". Для сравнения с соседями взята культура из журнала.</p>` : ""}
-    ${rr ? `<div class="card" style="border-left:4px solid var(--accent)"><h3>Разбор и что делать</h3><dl class="prow"><dt>Что было</dt><dd>${esc(rr.что_было)}</dd><dt>Вероятная причина</dt><dd>${esc(rr.причина)}</dd><dt>Что делать</dt><dd><b>${esc(rr.что_делать)}</b></dd></dl><p class="note" style="margin-top:8px">Причина - версия по спутнику, журналу и фото, подтвердить должен агроном.</p></div>` : ""}
+    ${rr ? `<div class="card" style="border-left:4px solid var(--accent)"><h3>Разбор и предложения</h3><dl class="prow"><dt>Что было</dt><dd>${esc(rr.что_было)}</dd><dt>Возможная причина</dt><dd>${esc(rr.причина)}</dd><dt>Что можно попробовать</dt><dd><b>${esc(rr.что_делать)}</b></dd></dl><p class="note" style="margin-top:8px">Причина - версия по спутнику, журналу и фото, подтвердить должен агроном.</p></div>` : ""}
     <div class="card chart"><h3 style="margin-bottom:8px">Как росло поле</h3>${f.s ? seasonChart(f) : `<p class="muted">Нет снимков по этому полю.</p>`}
       <p class="note" style="margin-top:8px">Линия - сколько зелени на поле по снимкам спутника (индекс NDVI: 0 - голая земля, 0,8 и выше - густой здоровый посев). Пунктир - поля той же культуры с похожей датой сева. Значки внизу - работы из журнала SmartAgro, наведите или нажмите, чтобы увидеть подробности.</p></div>
     <div class="grid2">
@@ -758,9 +757,8 @@ function viewRec(){
   const ha = a => nf(a.reduce((s,f)=>s+f.ha,0));
   const bd = RT.больше_данных || {};
   app.innerHTML = `<section class="view">
-    <div class="sec" style="margin-top:16px"><h2 style="font-family:var(--display);font-size:24px">Выводы сезона 2026 и что делать в 2027</h2>
+    <div class="sec" style="margin-top:16px"><h2 style="font-family:var(--display);font-size:24px">Выводы сезона 2026 и предложения на 2027</h2>
       ${RT.главное ? `<p class="lead" style="margin-top:0">${esc(RT.главное)}</p>` : ""}
-      ${RT.оговорка ? `<p class="caveat"><b>Важная оговорка.</b> ${esc(RT.оговорка)}</p>` : ""}
       <div class="tiles reveal" style="margin-top:14px">
         <div class="tile bad"><b data-n="${lag.length}">0</b><span>полей отставали от соседей, ${ha(lag)} га</span></div>
         <div class="tile ask"><b data-n="${rp.length}">0</b><span>полей рапса переведены в пар, ${ha(rp)} га</span></div>
@@ -769,13 +767,14 @@ function viewRec(){
       </div></div>
     ${(RT.выводы||[]).length ? `<div class="sec"><h2>Главное о сезоне</h2><ul class="rlist">${RT.выводы.map(([t,x])=>`<li><b>${esc(t)}</b>${esc(x)}</li>`).join("")}</ul></div>` : ""}
     ${lag.length ? `<div class="sec"><h2>Поля, которые отставали от соседей</h2><p class="note">Июль, сравнение с полями той же культуры и с похожим сроком сева. Культура и дата сева взяты из журнала работ.</p><div class="list">${lag.map(itemHTML).join("")}</div></div>` : ""}
-    ${rp.length ? `<div class="sec"><h2>Рапс, переведённый в пар</h2><p class="note">В базе пар, по журналу рапс посеян 17-24 мая и задискован 4-18 июля. Спутник видит это точно в дни работ. Ждём ответа агронома.</p><div class="btnrow">${rp.map(f=>fbtn(f.n)).join("")}</div></div>` : ""}
-    ${REC.rows.length ? `<div class="sec"><h2>По полям: причина и что делать</h2><p class="note">Первыми стоит разобрать поля, где причину можно убрать уже в 2027 году. Причины - версии, подтвердить должен агроном.</p>
-      <div class="rgrid">${REC.rows.map(r=>`<div class="card"><h3>${esc((r.поля||[]).slice(0,4).join(", "))}${(r.поля||[]).length>4?` и ещё ${(r.поля||[]).length-4}`:""}</h3><span class="note">${esc(r.культура||"")}</span><dl class="prow"><dt>Что было</dt><dd>${esc(r.что_было)}</dd><dt>Вероятная причина</dt><dd>${esc(r.причина)}</dd><dt>Что делать</dt><dd><b>${esc(r.что_делать)}</b></dd></dl><div class="btnrow" style="margin-top:10px">${(r.поля||[]).filter(byN).slice(0,6).map(fbtn).join("")}</div></div>`).join("")}</div></div>` : ""}
-    ${(RT.на_2027||[]).length ? `<div class="sec"><h2>Рекомендации на 2027</h2><p class="note">Главное - не новые средства, а полнота работ и быстрая проверка всходов.</p><div class="rgrid">${RT.на_2027.map(([t,xs])=>`<div class="card"><h3>${esc(t)}</h3><ul>${xs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div></div>` : ""}
+    ${rp.length ? `<div class="sec"><h2>Рапс, переведённый в пар</h2><p class="note">В базе пар, по журналу рапс посеян 17-24 мая и задискован 4-18 июля. На снимках изменения видны в те же дни. Уточняем у агронома.</p><div class="btnrow">${rp.map(f=>fbtn(f.n)).join("")}</div></div>` : ""}
+    ${REC.rows.length ? `<div class="sec"><h2>По полям: причина и что делать</h2><p class="note">Это предположения по имеющимся данным. Подтвердить или опровергнуть их могут агроном и команда хозяйства.</p>
+      <div class="rgrid">${REC.rows.map(r=>`<div class="card"><h3>${esc((r.поля||[]).slice(0,4).join(", "))}${(r.поля||[]).length>4?` и ещё ${(r.поля||[]).length-4}`:""}</h3><span class="note">${esc(r.культура||"")}</span><dl class="prow"><dt>Что было</dt><dd>${esc(r.что_было)}</dd><dt>Возможная причина</dt><dd>${esc(r.причина)}</dd><dt>Что можно попробовать</dt><dd><b>${esc(r.что_делать)}</b></dd></dl><div class="btnrow" style="margin-top:10px">${(r.поля||[]).filter(byN).slice(0,6).map(fbtn).join("")}</div></div>`).join("")}</div></div>` : ""}
+    ${(RT.на_2027||[]).length ? `<div class="sec"><h2>Что можно рассмотреть на 2027</h2><p class="note">По изученным данным можно предложить следующее. Это варианты для обсуждения с агрономом, а не готовые решения.</p><div class="rgrid">${RT.на_2027.map(([t,xs])=>`<div class="card"><h3>${esc(t)}</h3><ul>${xs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div></div>` : ""}
     ${bd.пункты ? `<div class="sec"><h2>Больше данных - точнее рекомендации</h2><p class="lead" style="margin-top:0;font-size:16px">${esc(bd.текст)}</p><ul class="rlist">${bd.пункты.map(([t,x])=>`<li><b>${esc(t)}</b>${esc(x)}</li>`).join("")}</ul></div>` : ""}
     ${(RT.расхождения||[]).length ? `<div class="sec"><h2>Почему возможны расхождения с тем, что было на поле</h2><div class="rgrid">${RT.расхождения.map(([t,x])=>`<div class="card"><h3>${esc(t)}</h3><p class="note">${esc(x)}</p></div>`).join("")}</div></div>` : ""}
     ${(REC.q.length || (RT.вопросы||[]).length) ? `<div class="sec"><h2>Вопросы агроному</h2><p class="note">Ответы агронома уточнят выводы, базу и правила для плагина и дашборда.</p><div class="card" style="overflow-x:auto"><table class="qtab"><thead><tr><th>№</th><th>Вопрос</th><th class="dat">Что видно по данным</th><th>Ответ</th></tr></thead><tbody>${(REC.q.length ? REC.q.map(q=>[q.n,q.вопрос,q.данные,q.ответ]) : RT.вопросы.map((q,k)=>[k+1,q[0],q[1],""])).map(([n,q,d,a])=>`<tr><td>${esc(n)}</td><td>${esc(q)}</td><td class="dat note">${esc(d)}</td><td class="${a?"":"ans"}">${a?esc(a):"ждём"}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+    ${RT.оговорка ? `<p class="caveat">${esc(RT.оговорка)}</p>` : ""}
     <p class="note">Выводы составлены по снимкам Sentinel-2, журналу работ SmartAgro и фото дрона${REC.upd?`, обновлено ${esc(REC.upd)}`:""}.</p>
   </section>`;
   app.querySelectorAll(".tile b").forEach(b => countUp(b, +b.dataset.n));
