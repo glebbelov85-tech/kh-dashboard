@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta name="referrer" content="no-referrer">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- Шаблон дашборда для руководителя. Данные берутся из data.js рядом
+     (его пишет кнопка "Обновить дашборд", dashboard_export.py). -->
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+<title>Поля Тритикум 2026</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=PT+Serif:wght@700&display=swap">
+<style>
+/* Макет: телефон в первую очередь, одна колонка; на широком экране карта слева, список справа.
+   Земляные нейтральные тона, один зелёный акцент, светофор отдельно от акцента, шкала зелени от бурого к зелёному. */
+:root{
+  --bg:#f1f3ec; --card:#ffffff; --fg:#1f2a22; --muted:#5d6b60; --line:#d6ddd0; --soft:#e8ece2;
+  --accent:#2f6b3a; --accent-fg:#ffffff;
+  --ok:#4f9a55; --warn:#d29a1f; --bad:#c7483c; --none:#c9cdc2;
+  --ok-bg:#e3f0e3; --warn-bg:#f8efd6; --bad-bg:#f6dedb;
+  --ask:#3d6fb6; --ask-bg:#dfe8f5;
+  --p1:#b5442c; --p2:#8a5a12; --p3:#2c64a8; --p4:#7a3fa0; --p5:#6b7066;
+  --zone:#7a1d12;
+  --display:"PT Serif",Georgia,serif; --ui:"Manrope","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141918; --card:#1d2423; --fg:#e6ebe4; --muted:#9aa89d; --line:#2f3a34; --soft:#252d2b;
+  --accent:#7cc487; --accent-fg:#0f2013;
+  --ok:#62b36a; --warn:#e0b14a; --bad:#e2655a; --none:#3e4744;
+  --ok-bg:#1f3324; --warn-bg:#3a3118; --bad-bg:#3d2320;
+  --ask:#7fa8e6; --ask-bg:#1f2b3d;
+  --p1:#ef8a72; --p2:#d9a85a; --p3:#7fb0ef; --p4:#c49be0; --p5:#a3a89e; --zone:#ffb3a6;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141918; --card:#1d2423; --fg:#e6ebe4; --muted:#9aa89d; --line:#2f3a34; --soft:#252d2b;
+  --accent:#7cc487; --accent-fg:#0f2013;
+  --ok:#62b36a; --warn:#e0b14a; --bad:#e2655a; --none:#3e4744;
+  --ok-bg:#1f3324; --warn-bg:#3a3118; --bad-bg:#3d2320;
+  --ask:#7fa8e6; --ask-bg:#1f2b3d;
+  --p1:#ef8a72; --p2:#d9a85a; --p3:#7fb0ef; --p4:#c49be0; --p5:#a3a89e; --zone:#ffb3a6;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui);font-size:15px;line-height:1.5;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1100px;margin:0 auto;padding-block:0 110px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding-block:18px 12px;border-bottom:1px solid var(--line)}
+header.top h1{font-family:var(--display);font-size:24px;margin:0;text-wrap:balance}
+header.top .upd{color:var(--muted);font-size:13px}
+.tag{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:2px 6px;margin-left:auto}
+h2{font-size:18px;font-weight:800;margin:0;text-wrap:balance}
+h3{font-size:12px;font-weight:700;margin:0;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+p{margin:0}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.sec{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+.lead{font-size:17px;max-width:62ch;margin-top:16px}
+.lead b{font-weight:800}
+.card{background:var(--card);border-radius:12px;padding:14px}
+/* плитки */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:720px){.tiles{grid-template-columns:repeat(4,1fr)}}
+.tile{background:var(--card);border-radius:12px;padding:12px 14px;border-top:4px solid var(--line);display:flex;flex-direction:column;gap:2px;text-align:left;font:inherit;color:inherit;border-left:0;border-right:0;border-bottom:0}
+.tile.ok{border-top-color:var(--ok)}.tile.warn{border-top-color:var(--warn)}.tile.bad{border-top-color:var(--bad)}.tile.zone{border-top-color:var(--zone)}.tile.ask{border-top-color:var(--ask)}
+.tile b{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile span{font-size:13px;color:var(--muted)}
+/* главная: две колонки */
+.two{display:grid;grid-template-columns:1fr;gap:18px;margin-top:18px}
+@media(min-width:900px){.two{grid-template-columns:3fr 2fr;align-items:start}}
+.two>*{min-width:0}
+/* карта */
+.mapcard{background:var(--card);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.maptools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:none;font:inherit;font-size:13px;font-weight:700;color:var(--muted);padding:6px 12px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mapbox{position:relative;border-radius:8px;overflow:hidden;background:var(--soft);touch-action:none;aspect-ratio:4/3;max-width:100%}
+@media(min-width:600px){.mapbox{aspect-ratio:16/10}}
+.mapbox svg{width:100%;height:100%;display:block;cursor:grab}
+.mapbox svg:active{cursor:grabbing}
+.fpath{stroke:var(--card);stroke-width:.6;vector-effect:non-scaling-stroke;transition:fill .45s ease;cursor:pointer}
+.fpath:hover{stroke:var(--fg);stroke-width:1.5}
+.fpath.sel{stroke:var(--fg);stroke-width:2.5}
+.zpath{fill:none;stroke:var(--zone);stroke-width:1.4;vector-effect:non-scaling-stroke;pointer-events:none}
+.ppt{fill:#2c64a8;stroke:#fff;stroke-width:1;vector-effect:non-scaling-stroke;pointer-events:none}
+.zoom{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:4px}
+.zoom button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit;font-size:18px;font-weight:700;cursor:pointer;display:grid;place-items:center}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font-size:12px;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-130%);opacity:0;transition:opacity .12s}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.ramp{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.ramp .bar{height:10px;width:140px;border-radius:5px;background:linear-gradient(90deg,#9b6a3a,#d8b44c,#b5c94a,#6aab45,#2c7537)}
+.player{display:flex;align-items:center;gap:10px}
+.play{width:40px;height:40px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-fg);font-size:15px;cursor:pointer;flex:none;display:grid;place-items:center}
+.player input{flex:1;min-width:0;accent-color:var(--accent)}
+.player .dt{font-weight:800;font-variant-numeric:tabular-nums;min-width:96px;text-align:right}
+.cloudnote{font-size:12px;color:var(--muted)}
+/* список внимания */
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:grid;grid-template-columns:6px 1fr auto;gap:12px;background:var(--card);border-radius:10px;padding:12px 14px 12px 0;cursor:pointer;border:1px solid transparent;text-align:left;font:inherit;color:inherit;width:100%}
+.item:hover,.item:focus-visible{border-color:var(--accent);outline:none}
+.item .stripe{border-radius:0 3px 3px 0}
+.item .t{font-weight:700}.item .r{font-size:13px;color:var(--muted);margin-top:2px}
+.item .ha{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;white-space:nowrap}
+.bad>.stripe{background:var(--bad)}.warn>.stripe{background:var(--warn)}.ok>.stripe{background:var(--ok)}.none>.stripe{background:var(--none)}
+.more{border:1px dashed var(--line);background:none;color:var(--accent);font:inherit;font-weight:700;border-radius:10px;padding:10px;cursor:pointer}
+.help{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.help b{color:var(--fg)}
+/* навигация */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:4px;background:var(--card);border-top:1px solid var(--line);padding:6px max(12px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));z-index:5}
+nav.tabs button{flex:1;max-width:190px;background:none;border:0;color:var(--muted);font:inherit;font-size:12px;font-weight:700;padding:6px 2px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.tabs svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button[aria-selected="true"]{color:var(--accent);background:var(--bg)}
+section.view{animation:rise .35s ease both}
+@keyframes rise{from{opacity:.35;transform:translateY(8px)}to{opacity:1;transform:none}}
+.reveal>*{animation:rise .45s ease both}
+.reveal>*:nth-child(2){animation-delay:.04s}.reveal>*:nth-child(3){animation-delay:.08s}.reveal>*:nth-child(4){animation-delay:.12s}.reveal>*:nth-child(5){animation-delay:.16s}.reveal>*:nth-child(n+6){animation-delay:.2s}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* карточка поля */
+.back{background:none;border:0;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;padding:14px 0 4px;align-self:flex-start}
+.fhead{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.fhead h2{font-family:var(--display);font-size:26px}
+.badge{font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px}
+.badge.bad{background:var(--bad-bg);color:var(--bad)}.badge.warn{background:var(--warn-bg);color:var(--warn)}.badge.ok{background:var(--ok-bg);color:var(--ok)}.badge.none{background:var(--soft);color:var(--muted)}.badge.ask{background:var(--ask-bg);color:var(--ask)}
+.ask>.stripe{background:var(--ask)}
+.caveat{border-left:4px solid var(--ask);background:var(--ask-bg);border-radius:10px;padding:12px 14px;font-size:14.5px;line-height:1.5}
+.caveat b{color:var(--fg)}
+.caveat a{color:var(--ask);font-weight:700}
+.rlist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+.rlist li{font-size:15px;line-height:1.5}
+.rlist li b{display:block}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.rgrid .card h3{margin-bottom:8px}
+.rgrid ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14.5px;line-height:1.45}
+.prow{display:grid;gap:4px;font-size:14px;line-height:1.45}
+.prow dt{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;margin-top:6px}
+.prow dd{margin:0}
+.qtab{width:100%;border-collapse:collapse;font-size:14px}
+.qtab th,.qtab td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+.qtab th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.qtab td:first-child{color:var(--muted);width:28px}
+.qtab .ans{color:var(--muted);font-style:italic;white-space:nowrap}
+@media (max-width:640px){.qtab .dat{display:none}}
+.facts{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:14px;color:var(--muted)}
+.facts b{color:var(--fg);font-weight:700}
+.say{font-size:16px;border-left:3px solid var(--accent);padding:2px 0 2px 12px;max-width:66ch}
+.grid2{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:760px){.grid2{grid-template-columns:1fr 1fr}}
+.grid2>*{min-width:0}
+.chart svg{width:100%;height:auto;display:block;max-width:100%;overflow:visible}
+.chart .ax{stroke:var(--line);stroke-width:1}
+.chart .lbl{font-size:10px;fill:var(--muted);font-family:var(--ui)}
+.chart .draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw 1.2s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.key{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}
+.key .mk{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:4px;font-size:10px;font-weight:800;color:#fff;margin-right:5px;vertical-align:-3px}
+.fmap svg{width:100%;height:auto;display:block;max-height:340px}
+.zcard{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px}
+.zcard header{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.zcard .rank{font-family:var(--display);font-size:22px;color:var(--accent);min-width:1.4em}
+.zcard .zt{font-weight:800}
+.zcard .zm{font-size:13px;color:var(--muted)}
+.chip{display:inline-block;white-space:nowrap;font-size:12px;font-weight:700;color:var(--c);border:1.5px solid var(--c);border-radius:20px;padding:1px 10px}
+.zimg{width:100%;border-radius:8px;background:#fff;display:block}
+.dl{display:grid;grid-template-columns:repeat(3,auto);gap:2px 22px;justify-content:start;font-size:13px}
+.dl dt{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.dl dd{margin:0;font-weight:800;font-variant-numeric:tabular-nums}
+.todo{font-size:14px}
+.gdl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:14px}
+.gdl dt{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding-top:3px}
+.gdl dd{margin:0}
+@media(max-width:480px){.gdl{grid-template-columns:1fr;gap:2px}.gdl dd{margin-bottom:6px}}
+.todo b{color:var(--accent)}
+.jr{font-size:14px;background:var(--soft);border-radius:8px;padding:8px 10px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.journal{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.journal li{display:grid;grid-template-columns:52px 18px 1fr auto;gap:10px;font-size:14px;padding:7px 0;border-bottom:1px solid var(--line);align-items:center}
+.journal li:last-child{border-bottom:0}
+.journal .who{grid-column:3 / -1;margin-top:-6px;color:var(--muted);font-size:12.5px}
+.journal time{color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px}
+.journal .ha{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.photos button{padding:0;border:0;background:none;cursor:pointer;border-radius:8px;overflow:hidden;position:relative;aspect-ratio:4/3;max-width:100%}
+.photos img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.photos button:hover img{transform:scale(1.04)}
+.morep{border:1px dashed var(--line);background:var(--soft);color:var(--accent);font:inherit;font-weight:700;border-radius:8px;cursor:pointer;aspect-ratio:4/3}
+.photos .pc{position:absolute;left:6px;bottom:6px;font-size:11px;background:rgba(0,0,0,.6);color:#fff;padding:1px 6px;border-radius:4px}
+/* разбор */
+.pats{display:flex;flex-direction:column;gap:10px}
+.pat{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:start;background:var(--card);border-radius:10px;padding:12px 14px}
+.pat .nm{font-weight:800}
+.pat .ex{grid-column:1/-1;font-size:14px;color:var(--muted);max-width:70ch}
+.pat .num{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;text-align:right;white-space:nowrap}
+.pat .meter{grid-column:1/-1;height:8px;border-radius:4px;background:var(--soft);overflow:hidden}
+.pat .meter i{display:block;height:100%;width:0;transition:width 1s ease}
+.zgrid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:900px){.zgrid{grid-template-columns:1fr 1fr}}
+.zgrid>*{min-width:0;background:var(--card)}
+.proof{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.proof{grid-template-columns:repeat(3,1fr)}}
+.proof .card{display:flex;flex-direction:column;gap:8px}
+.proof img{width:100%;border-radius:8px;aspect-ratio:4/3;object-fit:cover;cursor:pointer}
+/* культуры */
+.crops{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:760px){.crops{grid-template-columns:1fr 1fr}}
+.crop{background:var(--card);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.crop .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.crop .nm{font-weight:800;font-size:16px}
+.crop .ha{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sbar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--soft)}
+.sbar i{display:block;height:100%;transition:width .9s ease}
+.crop .ft{font-size:13px;color:var(--muted)}
+.crop .ft b{color:var(--fg)}
+.crop details summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--accent)}
+.crop details .list{margin-top:8px}
+.spark svg{width:100%;height:auto;display:block}
+/* фото */
+.lightbox{position:fixed;inset:0;background:rgba(10,14,12,.97);z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+[hidden]{display:none!important}
+.lbmain{display:flex;gap:14px;align-items:center;justify-content:center;max-width:100%}
+.lbwrap{position:relative;min-width:0;max-width:calc(100vw - 32px - 314px)}
+.lbz{max-width:100%;max-height:72vh;overflow:hidden;border-radius:8px;touch-action:none;cursor:zoom-in}
+.lbzb{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:4px;z-index:2}
+.lbzb button{width:38px;height:38px;border-radius:8px;border:0;background:rgba(15,20,17,.75);color:#fff;font:inherit;font-size:20px;font-weight:700;cursor:pointer;display:grid;place-items:center}
+.lbzb button:hover{background:rgba(15,20,17,.92)}
+.lbmap{flex:none;width:300px;display:flex;flex-direction:column;gap:6px}
+.lbmap svg{width:300px;height:300px;display:block;border-radius:8px;background:#26302b}
+.lbms{position:relative}.lbmz{position:absolute;left:6px;top:6px;display:flex;flex-direction:column;gap:4px}.lbmz button{width:32px;height:32px;border-radius:7px;border:0;background:rgba(15,20,17,.78);color:#fff;font:inherit;font-size:18px;font-weight:700;cursor:pointer;display:grid;place-items:center}.lbmz button:hover{background:rgba(15,20,17,.94)}.lbmz button:disabled{opacity:.35;cursor:default}
+.lbmap .mc{color:#aab3ad;font-size:12px;line-height:1.35}
+.lbmap .mc b{color:#e8ece6}
+@media (max-width:820px){.lbmain{flex-direction:column;gap:8px}.lbwrap{max-width:100%}.lbmap{width:min(220px,60vw)}.lbmap svg{width:min(220px,60vw);height:min(220px,60vw)}.lbz,.lbz img{max-height:52vh}.lbzb{top:auto;bottom:8px}}
+.lbz.on{cursor:grab}
+.lbz img{display:block;max-width:100%;max-height:72vh;object-fit:contain;transform-origin:0 0;user-select:none;-webkit-user-drag:none}
+.lightbox .hint{color:#aab3ad;font-size:12px}
+.lightbox .lc{color:#e8ece6;max-width:70ch;font-size:15px;text-align:center}
+.lightbox .lc b{display:block;color:#fff}
+.lightbox .x{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right,0px));width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:20px;cursor:pointer}
+.lightbox .nav{display:flex;gap:10px}
+.lightbox .nav button,.lightbox .nav a{text-decoration:none;border:1px solid rgba(255,255,255,.3);background:none;color:#fff;border-radius:999px;padding:7px 16px;font:inherit;font-weight:700;cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.note{font-size:13px;color:var(--muted);max-width:70ch}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tbl{overflow-x:auto}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <h1>КХ Тритикум: сезон 2026</h1>
+    <span class="upd" id="upd"></span>
+    <span class="tag" id="tag">демо на настоящих данных</span>
+  </header>
+  <main id="app"></main>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="Разделы">
+  <button role="tab" data-tab="main" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Главное</button>
+  <button role="tab" data-tab="season" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M4 15l4-5 4 3 4-6 4 4"/></svg>Разбор сезона</button>
+  <button role="tab" data-tab="crops" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 21V9"/><path d="M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zM12 10c0-3 2-5 5-5 0 3-2 5-5 5zM12 17c-3 0-5-2-5-5 3 0 5 2 5 5zM12 15c0-3 2-5 5-5 0 3-2 5-5 5z"/></svg>Культуры</button>
+  <button role="tab" data-tab="photos" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><circle cx="12" cy="12.5" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>Фото дрона</button>
+  <button role="tab" data-tab="rec" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.8.8 1.3 1.7 1.5 2.5h5c.2-.8.7-1.7 1.5-2.5A6 6 0 0 0 12 3z"/></svg>Выводы</button>
+</nav>
+<div id="lb" class="lightbox" hidden></div>
+
+<script>window.WEB=1</script>
+<script>
+// ---------- запуск: на компьютере - data.js, в интернете - data.enc по коду ----------
+async function tkDecrypt(buf, code){
+  const u = new Uint8Array(buf), enc = new TextEncoder();
+  if (String.fromCharCode(...u.slice(0,4)) !== "TKD1") throw new Error("format");
+  const salt = u.slice(4,20), iv = u.slice(20,36), it = new DataView(buf, 36, 4).getUint32(0);
+  const base = await crypto.subtle.importKey("raw", enc.encode(code), "PBKDF2", false, ["deriveBits"]);
+  const km = new Uint8Array(await crypto.subtle.deriveBits({name:"PBKDF2", salt, iterations: it, hash:"SHA-256"}, base, 512));
+  const mk = await crypto.subtle.importKey("raw", km.slice(32), {name:"HMAC", hash:"SHA-256"}, false, ["verify"]);
+  if (!await crypto.subtle.verify("HMAC", mk, u.slice(u.length-32), u.slice(0, u.length-32))) throw new Error("code");
+  const ak = await crypto.subtle.importKey("raw", km.slice(0,32), "AES-CTR", false, ["decrypt"]);
+  const gz = await crypto.subtle.decrypt({name:"AES-CTR", counter: iv, length: 128}, ak, u.slice(40, u.length-32));
+  return await new Response(new Blob([gz]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+}
+async function diskList(disk, size){
+  const out = {}; let off = 0, total = 1;
+  while (off < total) {
+    const r = await fetch(`https://cloud-api.yandex.net/v1/disk/public/resources?public_key=${encodeURIComponent(disk)}&limit=200&offset=${off}&preview_size=${size}&preview_crop=false`);
+    if (!r.ok) throw new Error("disk " + r.status);
+    const e = (await r.json())._embedded || {}, it = e.items || [];
+    total = e.total || 0; it.forEach(x => out[String(x.name).toLowerCase()] = x); off += 200;
+    if (!it.length) break;
+  }
+  return out;
+}
+async function webPhotos(){
+  const disk = (window.DASH.web || {}).disk; if (!disk) return 0;
+  const [a, b] = await Promise.all([diskList(disk, "1280x"), diskList(disk, "2560x").catch(() => ({}))]);
+  let miss = 0;
+  window.DASH.media.photos.forEach(p => { const k = String(p.fn || "").toLowerCase(), x = a[k];
+    if (x && x.preview) { p.img = x.preview; p.big = (b[k] && b[k].preview) || x.preview; p.orig = x.file || ""; } else miss++; });
+  return miss;
+}
+function BOOT(){
+  const app = document.getElementById("app"), nav = document.querySelector("nav.tabs");
+  if (window.DASH) return MAIN();
+  if (!window.WEB) { app.innerHTML = '<p style="padding:24px 0">Нет файла data.js рядом со страницей. Нажмите в плагине "Обновить дашборд".</p>'; return; }
+  nav.style.display = "none";
+  { const t = document.getElementById("tag"); if (t) t.textContent = "вход по коду"; }
+  let saved = ""; try { saved = localStorage.getItem("tk_code") || ""; } catch (e) {}
+  app.innerHTML = `<form id="login" class="card" style="max-width:420px;margin:40px auto;display:flex;flex-direction:column;gap:12px">
+    <b style="font-size:18px">Вход в дашборд</b><span class="note">Введите код, который вам передали.</span>
+    <input id="code" type="password" autocomplete="current-password" placeholder="Код" style="font:inherit;font-size:16px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)">
+    <label class="note" style="display:flex;gap:8px;align-items:center"><input id="rem" type="checkbox" checked> Запомнить на этом устройстве</label>
+    <button class="btn" style="justify-content:center;padding:10px">Открыть</button><span id="msg" class="note"></span></form>`;
+  const msg = document.getElementById("msg");
+  const open = async code => {
+    msg.textContent = "Открываю...";
+    try {
+      const r = await fetch("data.enc", {cache: "no-cache"}); if (!r.ok) throw new Error("file");
+      window.DASH = JSON.parse(await tkDecrypt(await r.arrayBuffer(), code));
+    } catch (e) {
+      msg.textContent = e.message === "code" ? "Код не подошёл. Проверьте и попробуйте ещё раз." : "Не удалось открыть данные: " + e.message;
+      try { localStorage.removeItem("tk_code"); } catch (_) {}
+      return;
+    }
+    try { if (document.getElementById("rem").checked) localStorage.setItem("tk_code", code); } catch (e) {}
+    msg.textContent = "Загружаю фото с Яндекс Диска...";
+    let miss = 0; try { miss = await webPhotos(); } catch (e) { miss = -1; }
+    nav.style.display = ""; MAIN();
+    if (miss) console.warn(miss < 0 ? "Яндекс Диск не ответил, фото не загружены" : `На Диске не найдено фото: ${miss}`);
+  };
+  document.getElementById("login").onsubmit = ev => { ev.preventDefault(); const c = document.getElementById("code").value; if (c) open(c); };
+  if (saved) { document.getElementById("code").value = saved; open(saved); }
+}
+</script>
+<script>
+function MAIN(){
+const D = window.DASH.core, M = window.DASH.media;
+const DATES = D.dates, F = D.fields, Z = D.zones, PAT = D.pat;
+const $ = (s, r=document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const nf = (x, d=0) => Number(x).toLocaleString("ru-RU", {minimumFractionDigits:d, maximumFractionDigits:d});
+const MON = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+const fmtD = s => { const [y,m,d] = s.split("-"); return `${+d} ${MON[+m-1]}`; };
+const shortD = s => { const [y,m,d] = s.split("-"); return `${d}.${m}`; };
+const cap = s => s ? s.charAt(0) + s.slice(1).toLowerCase() : "без культуры";
+const ST = {ok:"норма", warn:"присмотреться", bad:"проблема", none:"без посева", ask:"вопрос агроному"};
+const REC = window.DASH.rec || {text:{}, rows:[], lag:[], rp:[], q:[]}, RT = REC.text || {};
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+{ const b = window.DASH.built || ""; const bd = b ? fmtD(b.slice(0,10)) + " " + b.slice(0,4) : "";
+  $("#upd").textContent = `Снимки спутника ${fmtD(DATES[0])} - ${fmtD(DATES[DATES.length-1])}, облёты дрона ${[...new Set(M.pts.map(p=>p.d))].sort().map(shortD).join(", ")}. Собрано ${bd}`;
+  if (!window.DASH.demo) $("#tag").textContent = "только просмотр"; }
+
+// ---------- общие расчёты ----------
+const sown = F.filter(f => f.st !== "none");
+const tot = k => F.filter(f => f.st === k);
+const zoneHa = Z.reduce((a,z) => a + z.ha, 0);
+const sownHa = sown.reduce((a,f) => a + f.ha, 0);
+const GR = M.groups; const groupsByField = {}; GR.forEach((g,gi) => g.f.forEach(n => (groupsByField[n] ||= []).push(gi)));
+const photosByField = {}; GR.forEach(g => g.f.forEach(n => (photosByField[n] ||= []).push(...g.p)));
+const ptsByField = {}; M.pts.forEach(p => { if (p.f) (ptsByField[p.f] ||= []).push(p); });
+const fieldByName = {}; F.forEach(f => fieldByName[f.n] = f);
+function rampColor(v){
+  if (v == null) return null;
+  const st = [[.15,[155,106,58]],[.35,[216,180,76]],[.5,[181,201,74]],[.65,[106,171,69]],[.82,[44,117,55]]];
+  if (v <= st[0][0]) return `rgb(${st[0][1]})`;
+  for (let i=1;i<st.length;i++) if (v <= st[i][0]) {
+    const [a,ca] = st[i-1], [b,cb] = st[i], t = (v-a)/(b-a);
+    return `rgb(${ca.map((c,k)=>Math.round(c+(cb[k]-c)*t))})`;
+  }
+  return `rgb(${st[st.length-1][1]})`;
+}
+function countUp(el, to, dec=0){
+  if (reduce) { el.textContent = nf(to, dec); return; }
+  const t0 = performance.now(), dur = 900;
+  const step = t => { const k = Math.min(1,(t-t0)/dur), e = 1-Math.pow(1-k,3); el.textContent = nf(to*e, dec); if (k<1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+const pathOf = rings => rings.map(r => "M" + r.map(p => p[0]+","+p[1]).join("L") + "Z").join("");
+function bbox(rings){ let a=[1e9,1e9,-1e9,-1e9]; rings.forEach(r=>r.forEach(([x,y])=>{a[0]=Math.min(a[0],x);a[1]=Math.min(a[1],y);a[2]=Math.max(a[2],x);a[3]=Math.max(a[3],y);})); return a; }
+const FARM = bbox(F.flatMap(f => f.g));
+const proj = (lon,lat) => [(lon-D.proj.lon0)*D.proj.kx, -(lat-D.proj.lat0)*D.proj.ky];
+
+// ---------- карта хозяйства ----------
+function bestDate(){ let b=0,bn=-1; DATES.forEach((d,k)=>{ if (d.slice(5,7)!=="07") return; const n=F.filter(f=>f.s&&f.s[k]!=null).length; if(n>bn){bn=n;b=k;} }); return b; }
+function qbox(xy, lo=.04, hi=.96){ const xs=xy.map(p=>p[0]).sort((a,b)=>a-b), ys=xy.map(p=>p[1]).sort((a,b)=>a-b); const q=(a,t)=>a[Math.floor(t*(a.length-1))]; return [q(xs,lo),q(ys,lo),q(xs,hi),q(ys,hi)]; }
+const CENTERS = F.map(f => { const b=bbox(f.g); return [(b[0]+b[2])/2,(b[1]+b[3])/2]; });
+const mapState = {mode:"state", di:bestDate(), playing:false, timer:null, vb:null};
+function farmMap(host, opts={}){
+  const pad = 1.5;
+  const full = [FARM[0]-pad, FARM[1]-pad, FARM[2]-FARM[0]+2*pad, FARM[3]-FARM[1]+2*pad];
+  host.innerHTML = `<div class="mapbox"><svg viewBox="${full.join(" ")}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Карта полей хозяйства">
+    <defs><pattern id="hatch" width="1.2" height="1.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.2" height="1.2" fill="var(--none)"/><line x1="0" y1="0" x2="0" y2="1.2" stroke="var(--muted)" stroke-width=".5"/></pattern></defs>
+    <g class="fields">${F.map(f => `<path class="fpath" data-i="${f.i}" d="${pathOf(f.g)}"></path>`).join("")}</g>
+    <g class="zones">${Z.map(z => `<path class="zpath" d="${pathOf(z.g)}"></path>`).join("")}</g>
+    <g class="pts"></g>
+  </svg><div class="zoom"><button data-z="in" aria-label="Приблизить">+</button><button data-z="out" aria-label="Отдалить">&minus;</button><button data-z="all" aria-label="Всё хозяйство" title="Показать всё хозяйство" style="font-size:13px">&#x2922;</button></div><div class="tip"></div></div>`;
+  const svg = $("svg", host), box = $(".mapbox", host), tip = $(".tip", host);
+  let vb = full.slice();
+  const fit = b => { const r = svg.getBoundingClientRect(), asp = r.width && r.height ? r.width/r.height : 1.6; let w = (b[2]-b[0])*1.08+1, h = (b[3]-b[1])*1.08+1; if (w/h < asp) w = h*asp; else h = w/asp; return [(b[0]+b[2])/2-w/2, (b[1]+b[3])/2-h/2, w, h]; };
+  const start = opts.start ? fit(opts.start) : full;
+  const setVB = v => { vb = v; svg.setAttribute("viewBox", v.join(" ")); };
+  const toSvg = (cx, cy) => { const r = svg.getBoundingClientRect(); const s = Math.max(vb[2]/r.width, vb[3]/r.height); const ox = (r.width*s - vb[2])/2, oy = (r.height*s - vb[3])/2; return [vb[0] - ox + (cx - r.left)*s, vb[1] - oy + (cy - r.top)*s, s]; };
+  const zoomAt = (k, cx, cy) => { const [x,y] = toSvg(cx,cy); const w = Math.min(full[2]*1.2, Math.max(1.5, vb[2]*k)), h = vb[3]*(w/vb[2]); setVB([x-(x-vb[0])*(w/vb[2]), y-(y-vb[1])*(h/vb[3]), w, h]); };
+  const animateTo = target => { if (reduce) return setVB(target); const s = vb.slice(), t0 = performance.now(); const st = t => { const k = Math.min(1,(t-t0)/600), e = k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2; setVB(s.map((v,i)=>v+(target[i]-v)*e)); if (k<1) requestAnimationFrame(st); }; requestAnimationFrame(st); };
+  host.focusField = i => { const b = bbox(F[i].g), w = Math.max(b[2]-b[0], b[3]-b[1])*2.4+2; const cx=(b[0]+b[2])/2, cy=(b[1]+b[3])/2; animateTo([cx-w/2, cy-w*.75/2, w, w*.75]); };
+  host.reset = () => animateTo(start); host.all = () => animateTo(fit(FARM));
+  setVB(start);
+  // жесты
+  const ptrs = new Map(); let moved = 0, pinch0 = null;
+  svg.addEventListener("pointerdown", e => { svg.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); moved = 0; pinch0 = null; });
+  svg.addEventListener("pointermove", e => {
+    if (!ptrs.has(e.pointerId)) { // подсказка
+      const p = e.target.closest(".fpath"); if (p) { const f = F[+p.dataset.i]; const r = box.getBoundingClientRect(); tip.textContent = `${f.n} · ${cap(f.c)} · ${nf(f.ha)} га`; tip.style.left = (e.clientX-r.left)+"px"; tip.style.top = (e.clientY-r.top)+"px"; tip.style.opacity = 1; } else tip.style.opacity = 0;
+      return;
+    }
+    const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ptrs.size === 1) { const [, , s] = toSvg(0,0); const dx = (e.clientX-prev[0])*s, dy = (e.clientY-prev[1])*s; moved += Math.abs(e.clientX-prev[0]) + Math.abs(e.clientY-prev[1]); setVB([vb[0]-dx, vb[1]-dy, vb[2], vb[3]]); }
+    else if (ptrs.size === 2) { const [a,b] = [...ptrs.values()]; const d = Math.hypot(a[0]-b[0], a[1]-b[1]); if (pinch0) zoomAt(pinch0/d, (a[0]+b[0])/2, (a[1]+b[1])/2); pinch0 = d; moved += 10; }
+  });
+  const up = e => { const was = ptrs.size; ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = null;
+    if (was === 1 && moved < 6 && e.type === "pointerup") { const el = document.elementFromPoint(e.clientX, e.clientY); const p = el && el.closest(".fpath"); if (p && opts.onPick) opts.onPick(+p.dataset.i); } };
+  svg.addEventListener("pointerup", up); svg.addEventListener("pointercancel", up);
+  svg.addEventListener("pointerleave", () => tip.style.opacity = 0);
+  svg.addEventListener("wheel", e => { e.preventDefault(); zoomAt(e.deltaY > 0 ? 1.18 : 1/1.18, e.clientX, e.clientY); }, {passive:false});
+  host.querySelectorAll(".zoom button").forEach(b => b.onclick = () => { const r = svg.getBoundingClientRect(); if (b.dataset.z==="all") return (Math.abs(vb[2]-start[2])<.01 ? host.all() : host.reset()); zoomAt(b.dataset.z==="in" ? 1/1.6 : 1.6, r.left+r.width/2, r.top+r.height/2); });
+  // клавиатура: Enter на поле
+  svg.querySelectorAll(".fpath").forEach(p => { p.setAttribute("tabindex","-1"); });
+  host.paint = (mode, di) => {
+    svg.querySelectorAll(".fpath").forEach(p => { const f = F[+p.dataset.i];
+      if (mode === "state") p.style.fill = `var(--${f.st})`;
+      else if (mode === "green") { const v = f.s ? f.s[di] : null; p.style.fill = f.st==="none" && v==null ? "var(--none)" : (rampColor(v) || "url(#hatch)"); }
+      else p.style.fill = `var(--none)`;
+    });
+    $(".zones", svg).style.display = mode === "state" ? "" : "none";
+    const g = $(".pts", svg);
+    if (mode === "photos") { if (!g.childElementCount) g.innerHTML = M.pts.map(p => { const [x,y] = proj(p.lon,p.lat); return `<circle class="ppt" cx="${x.toFixed(3)}" cy="${y.toFixed(3)}" r=".14"></circle>`; }).join(""); g.style.display = ""; }
+    else g.style.display = "none";
+  };
+  return host;
+}
+
+// ---------- представления ----------
+const app = $("#app");
+let MAP = null;
+function viewMain(){
+  const bad = tot("bad"), warn = tot("warn"), ok = tot("ok");
+  const haOf = a => a.reduce((s,f)=>s+f.ha,0);
+  const attn = bad.slice().sort((a,b) => (b.zh - a.zh) || ((a.jul??0) - (b.jul??0)));
+  app.innerHTML = `<section class="view">
+    ${RT.оговорка ? `<p class="caveat" style="margin-top:16px"><b>Важно.</b> Архив данных хозяйства только начинает собираться: цифры надёжны, а причины пока версии для проверки. С каждым сезоном выводы будут точнее. <a href="#rec">Выводы и рекомендации</a></p>` : ""}
+    <p class="lead">Сезон 2026 в целом прошёл ровно. Слабые участки нашлись на <b>${nf(zoneHa)} га</b>, это ${nf(zoneHa/sownHa*100,1)}% посевов. Внимания требуют <b>${bad.length} полей</b>, ещё ${warn.length} стоит осмотреть при случае.</p>
+    <div class="tiles reveal" style="margin-top:16px">
+      <div class="tile ok"><b data-n="${ok.length}">0</b><span>полей в норме, ${nf(haOf(ok))} га</span></div>
+      <div class="tile warn"><b data-n="${warn.length}">0</b><span>присмотреться, ${nf(haOf(warn))} га</span></div>
+      <div class="tile bad"><b data-n="${bad.length}">0</b><span>полей с проблемой, ${nf(haOf(bad))} га</span></div>
+      <div class="tile zone"><b data-n="${Z.length}">0</b><span>слабых участков, ${nf(zoneHa)} га</span></div>
+    </div>
+    <div class="two">
+      <div class="stack">
+        <div class="mapcard">
+          <div class="maptools">
+            <div class="seg" role="group" aria-label="Что показать на карте">
+              <button data-m="state" aria-pressed="true">Состояние</button>
+              <button data-m="green" aria-pressed="false">Зелень по датам</button>
+            </div>
+            <div class="legend" id="lg"></div>
+          </div>
+          <div id="mapHost"></div>
+          <div id="playerHost"></div>
+        </div>
+        <div class="card help"><h3>Как читать карту</h3>
+          <p><b>Состояние</b> - итог сезона по каждому полю: зелёное в норме, жёлтое стоит осмотреть, красное отставало заметно. Тёмные контуры внутри полей - слабые участки.</p>
+          <p><b>Зелень по датам</b> - как густо стоял посев на каждый снимок со спутника. Нажмите ▶, и сезон проиграется за полминуты: видно, как поля зеленеют в июне и желтеют к уборке. Серая штриховка - облака, в этот день поле не видно.</p>
+          <p>Карту можно двигать и приближать пальцами. Кнопка ⤢ показывает всё хозяйство, включая дальние поля. Нажмите на поле, чтобы открыть его карточку.</p></div>
+      </div>
+      <div class="stack">
+        ${tot("ask").length ? `<div class="card" style="border-left:4px solid var(--ask)"><h3>Вопрос агроному: ${tot("ask").length} полей рапса</h3><p class="note" style="margin:6px 0 10px">${nf(haOf(tot("ask")))} га. В базе записаны как пар, а по журналу в мае здесь посеян рапс и в июле задискован. Пока агроном не ответит, эти поля не считаем ни нормой, ни проблемой.</p><div class="btnrow"><button class="btn" data-go="rec">Выводы и вопросы</button></div></div>` : ""}
+        <h2>Требуют внимания</h2>
+        <div class="list" id="attn">${attn.slice(0,8).map(itemHTML).join("")}</div>
+        ${attn.length > 8 ? `<button class="more" id="more">Показать все ${attn.length}</button>` : ""}
+      </div>
+    </div></section>`;
+  app.querySelectorAll(".tile b").forEach(b => countUp(b, +b.dataset.n));
+  MAP = farmMap($("#mapHost"), {onPick: i => go("f-"+i), start: qbox(CENTERS,.1,.9)});
+  const setMode = m => { mapState.mode = m; stop(); app.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.m===m)); MAP.paint(m, mapState.di); drawLegend(); drawPlayer(); };
+  app.querySelectorAll(".seg button").forEach(b => b.onclick = () => setMode(b.dataset.m));
+  setMode(mapState.mode);
+  bindItems(app);
+  app.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
+  const more = $("#more"); if (more) more.onclick = () => { $("#attn").innerHTML = attn.map(itemHTML).join(""); bindItems($("#attn")); more.remove(); };
+}
+function drawLegend(){
+  $("#lg").innerHTML = mapState.mode === "state"
+    ? `<span><i style="background:var(--ok)"></i>норма</span><span><i style="background:var(--warn)"></i>присмотреться</span><span><i style="background:var(--bad)"></i>проблема</span>${tot("ask").length?`<span><i style="background:var(--ask)"></i>вопрос агроному</span>`:""}<span><i style="background:var(--none)"></i>без посева</span>`
+    : `<span class="ramp">мало зелени <span class="bar"></span> густо</span>`;
+}
+function drawPlayer(){
+  const h = $("#playerHost");
+  if (mapState.mode !== "green") { h.innerHTML = ""; return; }
+  h.innerHTML = `<div class="player"><button class="play" id="play" aria-label="Проиграть сезон">▶</button><input type="range" id="dslider" min="0" max="${DATES.length-1}" value="${mapState.di}" aria-label="Дата снимка"><span class="dt" id="dlabel"></span></div><p class="cloudnote" id="cnote"></p>`;
+  const sl = $("#dslider");
+  const show = () => { $("#dlabel").textContent = fmtD(DATES[mapState.di]); sl.value = mapState.di; MAP.paint("green", mapState.di);
+    const seen = sown.filter(f => f.s && f.s[mapState.di] != null).length; $("#cnote").textContent = `Снимок ${fmtD(DATES[mapState.di])}: видно ${seen} из ${sown.length} засеянных полей, остальные под облаками.`; };
+  sl.oninput = () => { stop(); mapState.di = +sl.value; show(); };
+  $("#play").onclick = () => mapState.playing ? stop() : play(show);
+  show();
+}
+function play(show){
+  mapState.playing = true; $("#play").textContent = "❚❚"; $("#play").setAttribute("aria-label","Пауза");
+  if (mapState.di >= DATES.length-1) mapState.di = 0;
+  mapState.timer = setInterval(() => { if (mapState.di >= DATES.length-1) return stop(); mapState.di++; show(); }, 750);
+}
+function stop(){ mapState.playing = false; clearInterval(mapState.timer); const p = $("#play"); if (p) { p.textContent = "▶"; p.setAttribute("aria-label","Проиграть сезон"); } }
+function itemHTML(f){
+  return `<button class="item ${f.st}" data-f="${f.i}"><span class="stripe"></span><span><div class="t">${esc(f.n)}, ${esc(cap(f.c).toLowerCase())}</div><div class="r">${esc(f.why || "Отставало от соседних полей.")}</div></span><span class="ha">${nf(f.ha)} га</span></button>`;
+}
+function bindItems(root){ root.querySelectorAll("[data-f]").forEach(b => b.onclick = () => go("f-"+b.dataset.f)); }
+
+// --- график сезона ---
+const X0 = Date.parse("2026-05-01"), X1 = Date.parse("2026-10-20");
+function workKind(t){ t = t.toLowerCase();
+  if (t.includes("посев") && !t.includes("предпосев")) return ["С","#2f6b3a","сев"];
+  if (t.includes("уборочн") || t.includes("обмолот") || t.includes("скашиван") || t.includes("кошение")) return ["У","#8a5a12","уборка"];
+  if (t.includes("десикац")) return ["Д","#b5442c","десикация"];
+  if (t.includes("гербицид") || t.includes("инсектицид") || t.includes("фунгицид") || t.includes("протрав")) return ["З","#7a3fa0","защита растений"];
+  return ["О","#5d6b60","обработка почвы, подкормка"];
+}
+function seasonChart(f, opts={}){
+  const W=640, H=230, L=34, R=10, T=12, B=50;
+  const x = ms => L + (ms-X0)/(X1-X0)*(W-L-R), y = v => T + (1-v/.9)*(H-T-B);
+  const pts = arr => arr.map((v,k) => v==null ? null : [x(Date.parse(DATES[k])), y(v)]).filter(Boolean);
+  const line = (arr, color, w, dash, cls) => { const p = pts(arr); if (p.length<2) return ""; let len = 0; for (let i=1;i<p.length;i++) len += Math.hypot(p[i][0]-p[i-1][0], p[i][1]-p[i-1][1]);
+    return `<polyline class="${cls||""}" style="--len:${Math.ceil(len)}" fill="none" stroke="${color}" stroke-width="${w}" ${dash?`stroke-dasharray="${dash}"`:""} stroke-linejoin="round" stroke-linecap="round" points="${p.map(q=>q.join(",")).join(" ")}"/>`; };
+  const mp = pts(f.s||[]);
+  const area = mp.length>1 ? `<polygon fill="var(--accent)" opacity=".1" points="${mp[0][0]},${y(0)} ${mp.map(q=>q.join(",")).join(" ")} ${mp[mp.length-1][0]},${y(0)}"/>` : "";
+  const months = [5,6,7,8,9,10].map(m => Date.parse(`2026-${String(m).padStart(2,"0")}-01`));
+  const mname = ["май","июнь","июль","август","сентябрь","октябрь"];
+  const works = (f.w||[]).map(w => { const [d,m] = w[0].split("."); const ms = Date.parse(`2026-${m}-${d}`); return {ms, w, k: workKind(w[1])}; }).filter(o => o.ms>=X0 && o.ms<=X1);
+  // раскладка значков работ без наложения
+  const lanes = []; works.forEach(o => { const px = x(o.ms); let l = 0; while (lanes[l] != null && px - lanes[l] < 15) l++; lanes[l] = px; o.l = l; });
+  const phDates = [...new Set((ptsByField[f.n]||[]).map(p => p.d))];
+  const svg = `<svg viewBox="0 0 ${W} ${H + Math.max(0,lanes.length-1)*16}" role="img" aria-label="Зелень поля за сезон">
+    ${[0,.2,.4,.6,.8].map(v=>`<line class="ax" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="lbl" x="${L-6}" y="${y(v)+3}" text-anchor="end">${v.toFixed(1).replace(".",",")}</text>`).join("")}
+    ${months.map((ms,i)=>`<text class="lbl" x="${x(ms)+4}" y="${H-B+14}">${mname[i]}</text><line class="ax" x1="${x(ms)}" x2="${x(ms)}" y1="${H-B}" y2="${H-B+5}"/>`).join("")}
+    ${phDates.map(d=>`<g><line x1="${x(Date.parse(d))}" x2="${x(Date.parse(d))}" y1="${T}" y2="${H-B}" stroke="#2c64a8" stroke-width="1" stroke-dasharray="2 3"/><text x="${x(Date.parse(d))+3}" y="${T+9}" class="lbl" style="fill:#2c64a8">дрон ${shortD(d)}</text></g>`).join("")}
+    ${area}
+    ${f.m ? line(f.m, "var(--warn)", 2, "5 4", "") : ""}
+    ${line(f.s||[], "var(--accent)", 3, "", "draw")}
+    ${mp.map(q=>`<circle cx="${q[0]}" cy="${q[1]}" r="2.2" fill="var(--accent)"/>`).join("")}
+    ${works.map(o=>`<g><title>${esc(o.w[0]+" "+o.w[1]+", "+o.w[2]+" га")}</title><rect x="${x(o.ms)-7}" y="${H-B+22+o.l*16}" width="14" height="14" rx="3" fill="${o.k[1]}"/><text x="${x(o.ms)}" y="${H-B+32.5+o.l*16}" text-anchor="middle" style="font:800 9px var(--ui);fill:#fff">${o.k[0]}</text></g>`).join("")}
+  </svg>`;
+  const kinds = [...new Map(works.map(o=>[o.k[0],o.k])).values()];
+  return `${svg}<div class="key"><span><i style="background:var(--accent)"></i>это поле</span>${f.m?`<span><i style="background:var(--warn)"></i>соседние поля той же культуры</span>`:""}${phDates.length?`<span><i style="background:#2c64a8"></i>облёт дрона</span>`:""}${kinds.map(k=>`<span><span class="mk" style="background:${k[1]}">${k[0]}</span>${k[2]}</span>`).join("")}</div>`;
+}
+function fieldMini(f){
+  const b = bbox(f.g), pad = Math.max(b[2]-b[0], b[3]-b[1])*.08+.05;
+  const zs = Z.filter(z => z.f === f.i);
+  const pts = (ptsByField[f.n]||[]).map(p => proj(p.lon,p.lat));
+  return `<svg viewBox="${b[0]-pad} ${b[1]-pad} ${b[2]-b[0]+2*pad} ${b[3]-b[1]+2*pad}" role="img" aria-label="Контур поля со слабыми участками">
+    <path d="${pathOf(f.g)}" fill="var(--ok-bg)" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    ${zs.map(z=>`<path d="${pathOf(z.g)}" fill="var(--bad)" fill-opacity=".35" stroke="var(--zone)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`).join("")}
+    ${pts.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="${(b[2]-b[0]+b[3]-b[1])/140}" fill="#2c64a8" stroke="#fff" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join("")}
+  </svg>`;
+}
+function zoneCard(z, withField){
+  const p = PAT[z.p], img = z.img; const zd = (D.zdates||[]).map(fmtD).join(", ").replace(/, ([^,]*)$/, " и $1");
+  const dlt = v => v==null ? "-" : (v>0?"+":"") + nf(v,2);
+  return `<article class="zcard">
+    <header><span class="rank" title="Место по важности">${z.r}</span><div><div class="zt">${esc(z.fn)}, ${esc(cap(z.c).toLowerCase())}</div><div class="zm">участок ${nf(z.ha,1)} га, слабый на ${z.dw} снимках</div></div><span class="chip" style="--c:var(--${p[0]})">${esc(p[1])}</span></header>
+    ${img ? `<img class="zimg" src="${img}" alt="Зелень участка ${z.r} на ${zd}" loading="lazy"><p class="note">Снимки ${zd}. Синий контур - слабый участок, красное и жёлтое - мало зелени.</p>` : ""}
+    <p class="note" style="color:var(--fg)">${esc(p[2])}</p>
+    <dl class="dl"><div><dt>июнь</dt><dd>${dlt(z.jun)}</dd></div><div><dt>июль</dt><dd>${dlt(z.jul)}</dd></div><div><dt>август</dt><dd>${dlt(z.aug)}</dd></div></dl>
+    <p class="note">Разница с остальным полем по зелени. Минус - участок слабее.</p>
+    ${z.j ? `<p class="jr"><b>По журналу работ:</b> ${esc(z.j)}</p>` : ""}
+    <p class="todo"><b>Что проверить.</b> ${esc(p[3])}</p>
+    <div class="btnrow">${withField && z.f!=null ? `<button class="btn pri" data-f="${z.f}">Открыть поле</button>` : ""}<a class="btn" href="https://yandex.ru/maps/?pt=${z.lon},${z.lat}&z=16&l=sat" target="_blank" rel="noopener">Точка на Яндекс Картах</a><span class="btn" style="cursor:text;user-select:all;font-weight:500">${z.lat}, ${z.lon}</span></div>
+  </article>`;
+}
+function viewField(i){
+  const f = F[i]; if (!f) return go("main");
+  const zs = Z.filter(z => z.f === f.i);
+  const sow = (f.w||[]).filter(w => workKind(w[1])[0]==="С").map(w=>w[0]);
+  const sowTxt = sow.length > 1 ? `сев с ${sow[0]} по ${sow[sow.length-1]}` : sow.length ? `сев ${sow[0]}` : (f.sow ? `сев ${shortD(f.sow)}` : "");
+  const rr = f.rec != null ? REC.rows[f.rec] : null;
+  const phs = (photosByField[f.n]||[]);
+  const npts = (ptsByField[f.n]||[]).reduce((a,p)=>a+p.n,0); const fgs = groupsByField[f.n]||[];
+  const peak = f.s ? Math.max(...f.s.filter(v=>v!=null)) : null;
+  const say = f.st === "ok" ? "Поле прошло сезон на уровне соседних полей той же культуры. Слабых участков не найдено."
+    : f.st === "none" ? "Поле без посева в 2026 году (пар или культура не указана)." : (f.why || "Отставало от соседних полей.");
+  // ok-поле с оговоркой
+  const say2 = f.st === "ok" && f.lbl === "оговорка" && f.note ? " Оговорка: " + f.note + "." : "";
+  app.innerHTML = `<section class="view stack">
+    <button class="back" id="back">&larr; Назад</button>
+    <div class="fhead"><h2>${esc(f.n)}</h2><span class="badge ${f.st}">${ST[f.st]}</span></div>
+    <div class="facts"><span><b>${esc(cap(f.c))}</b></span><span>${nf(f.ha,1)} га</span>${sowTxt?`<span>${sowTxt}</span>`:""}${peak?`<span>пик зелени <b>${nf(peak,2)}</b></span>`:""}${npts?`<span>фото дрона: <b>${npts}</b></span>`:""}</div>
+    <p class="say">${esc(say + say2)}</p>
+    ${f.jc && f.c && f.jc.toUpperCase() !== f.c.toUpperCase() ? `<p class="note">В базе культура "${esc(cap(f.c).toLowerCase())}", по журналу работ - "${esc(cap(f.jc).toLowerCase())}". Для сравнения с соседями взята культура из журнала.</p>` : ""}
+    ${rr ? `<div class="card" style="border-left:4px solid var(--accent)"><h3>Разбор и что делать</h3><dl class="prow"><dt>Что было</dt><dd>${esc(rr.что_было)}</dd><dt>Вероятная причина</dt><dd>${esc(rr.причина)}</dd><dt>Что делать</dt><dd><b>${esc(rr.что_делать)}</b></dd></dl><p class="note" style="margin-top:8px">Причина - версия по спутнику, журналу и фото, подтвердить должен агроном.</p></div>` : ""}
+    <div class="card chart"><h3 style="margin-bottom:8px">Как росло поле</h3>${f.s ? seasonChart(f) : `<p class="muted">Нет снимков по этому полю.</p>`}
+      <p class="note" style="margin-top:8px">Линия - сколько зелени на поле по снимкам спутника (индекс NDVI: 0 - голая земля, 0,8 и выше - густой здоровый посев). Пунктир - поля той же культуры с похожей датой сева. Значки внизу - работы из журнала SmartAgro, наведите или нажмите, чтобы увидеть подробности.</p></div>
+    <div class="grid2">
+      <div class="card fmap stack"><h3>Поле на карте</h3>${fieldMini(f)}<div class="legend"><span><i style="background:var(--bad);opacity:.6"></i>слабые участки</span>${npts?`<span><i style="background:#2c64a8;border-radius:50%"></i>точки съёмки дрона</span>`:""}</div></div>
+      <div class="card stack"><h3>Фото дрона</h3>${fgs.length ? fgs.map(gi=>groupBlock(gi,true)).join("") : `<p class="note">Дрон над этим полем в 2026 году не летал.</p>`}</div>
+    </div>
+    ${zs.length ? `<h2 style="margin-top:6px">Слабые участки (${zs.length})</h2><div class="zgrid">${zs.map(z=>zoneCard(z,false)).join("")}</div>` : ""}
+    <div class="card"><h3 style="margin-bottom:6px">Что делали на поле</h3>${(f.w||[]).length ? `<ul class="journal">${f.w.map(w=>{const k=workKind(w[1]);return `<li><time>${w[0]}</time><span class="mk" style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;background:${k[1]};color:#fff;font-size:10px;font-weight:800">${k[0]}</span><span>${esc(w[1].charAt(0).toUpperCase()+w[1].slice(1))}</span><span class="ha">${esc(w[2])} га</span>${w[3]?`<span class="who">${esc(w[3])}</span>`:""}</li>`}).join("")}</ul><p class="note" style="margin-top:6px">Из журнала гектарных работ SmartAgro за 2026 год. Под работой - кто её делал.</p>` : `<p class="note">Записей в журнале работ нет.</p>`}</div>
+  </section>`;
+  $("#back").onclick = () => history.length > 1 ? history.back() : go("main");
+  bindPhotos(app); bindItems(app);
+}
+function photoBtn(k){ const p = M.photos[k], g = GR[p.g]; return `<button data-ph="${k}" aria-label="Открыть фото: ${esc(g.t)}"><img src="${p.img}" alt="${esc(g.t)}" loading="lazy"><span class="pc">${esc(g.t.split(",")[0])} · ${p.d?shortD(p.d):""}</span></button>`; }
+function groupBlock(gi, compact){ const g = GR[gi];
+  return `<div class="stack" style="gap:10px" data-glist="${g.p.join(",")}">
+    <div style="display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center"><b>${esc(g.t)}</b><span class="chip" style="--c:var(--${g.c})">${esc(g.vt)}</span></div>
+    <div class="photos">${g.p.slice(0,4).map(photoBtn).join("")}${g.p.length>4?`<button class="morep" data-ph="${g.p[4]}" data-list="${g.p.join(",")}">ещё ${g.p.length-4} фото</button>`:""}</div>
+    <dl class="gdl"><dt>Что на фото</dt><dd>${esc(g.ph)}</dd><dt>Спутник</dt><dd>${esc(g.sat)}</dd><dt>Журнал работ</dt><dd>${esc(g.j)}</dd></dl>
+    <p class="say" style="font-size:15px"><b>Вывод.</b> ${esc(g.k)}</p>
+  </div>`; }
+function bindPhotos(root, list){ root.querySelectorAll("[data-ph]").forEach(b => b.onclick = () => { const own = b.dataset.list ? b.dataset.list.split(",").map(Number) : (b.closest("[data-glist]") ? b.closest("[data-glist]").dataset.glist.split(",").map(Number) : list); openLB(+b.dataset.ph, own); }); }
+function openLB(k, list){
+  list = list || M.photos.map((_,i)=>i); let pos = list.indexOf(k); const lb = $("#lb");
+  const draw = () => { const p = M.photos[list[pos]]; const g = GR[p.g]; const f = fieldByName[g.f[0]];
+    lb.innerHTML = `<button class="x" aria-label="Закрыть">&times;</button><div class="lbmain"><div class="lbwrap"><div class="lbz"><img src="${p.big || p.img}" alt="${esc(g.t)}" draggable="false"></div><div class="lbzb"><button data-zz="in" aria-label="Приблизить" title="Приблизить">+</button><button data-zz="out" aria-label="Отдалить" title="Отдалить">&minus;</button><button data-zz="reset" aria-label="Всё фото" title="Всё фото" style="font-size:15px">&#x2922;</button></div></div>${photoMap(p, f)}</div><span class="hint">Кнопки + и &minus;, двойное нажатие, колесо мыши или два пальца - приблизить. Фото можно двигать.</span><p class="lc"><b>${esc(g.t)} · ${esc(g.vt)}</b>${esc(g.ph)}</p><div class="nav">${list.length>1?`<button data-d="-1" aria-label="Предыдущее фото">&larr;</button><button data-d="1" aria-label="Следующее фото">&rarr;</button>`:""}${f?`<button data-open="${f.i}">Карточка поля</button>`:""}${p.orig?`<a href="${esc(p.orig)}" rel="noopener">Скачать оригинал</a>`:""}</div>`;
+    $(".x",lb).onclick = close; lb.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { pos = (pos + +b.dataset.d + list.length) % list.length; draw(); });
+    const o = $("[data-open]",lb); if (o) o.onclick = () => { close(); go("f-"+o.dataset.open); };
+    const zm = zoomable($(".lbz",lb)); lb.querySelectorAll("[data-zz]").forEach(b => b.onclick = () => zm[b.dataset.zz]());
+    const bindMap = () => lb.querySelectorAll("[data-mz]").forEach(b => b.onclick = () => { mapLv = Math.max(0, Math.min(MAPR.length-1, mapLv + +b.dataset.mz)); $(".lbmap",lb).outerHTML = photoMap(p, f); bindMap(); });
+    bindMap(); };
+  const close = () => { lb.hidden = true; document.removeEventListener("keydown", key); };
+  const key = e => { if (e.key==="Escape") close(); if (e.key==="ArrowRight"&&list.length>1){pos=(pos+1)%list.length;draw();} if (e.key==="ArrowLeft"&&list.length>1){pos=(pos-1+list.length)%list.length;draw();} };
+  document.addEventListener("keydown", key); lb.onclick = e => { if (e.target === lb) close(); };
+  draw(); lb.hidden = false;
+}
+function zoomable(box){
+  const img = $("img",box); let k=1, tx=0, ty=0; const ptrs=new Map(); let d0=null, last=0;
+  const apply = () => { const w=box.clientWidth, h=box.clientHeight; k=Math.min(6,Math.max(1,k)); tx=Math.min(0,Math.max(w-w*k,tx)); ty=Math.min(0,Math.max(h-h*k,ty)); img.style.transform=`translate(${tx}px,${ty}px) scale(${k})`; box.classList.toggle("on",k>1); };
+  const zoomAt = (nk, cx, cy) => { const r=box.getBoundingClientRect(), x=cx-r.left, y=cy-r.top; tx = x-(x-tx)*(nk/k); ty = y-(y-ty)*(nk/k); k=nk; apply(); };
+  box.addEventListener("wheel", e => { e.preventDefault(); const dy = Math.max(-60, Math.min(60, e.deltaMode ? e.deltaY*30 : e.deltaY)); zoomAt(k*Math.exp(-dy*(e.ctrlKey ? .006 : .0025)), e.clientX, e.clientY); }, {passive:false});
+  box.addEventListener("dblclick", e => zoomAt(k>1?1:2.5, e.clientX, e.clientY));
+  box.addEventListener("pointerdown", e => { box.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,[e.clientX,e.clientY]); d0=null;
+    const now=Date.now(); if (e.pointerType==="touch" && ptrs.size===1 && now-last<300) zoomAt(k>1?1:2.5, e.clientX, e.clientY); last=now; });
+  box.addEventListener("pointermove", e => { if(!ptrs.has(e.pointerId)) return; const p=ptrs.get(e.pointerId); ptrs.set(e.pointerId,[e.clientX,e.clientY]);
+    if (ptrs.size===1 && k>1){ tx+=e.clientX-p[0]; ty+=e.clientY-p[1]; apply(); }
+    else if (ptrs.size===2){ const [a,b]=[...ptrs.values()]; const d=Math.hypot(a[0]-b[0],a[1]-b[1]); if(d0) zoomAt(k*Math.pow(d/d0,.6),(a[0]+b[0])/2,(a[1]+b[1])/2); d0=d; } });
+  const up = e => { ptrs.delete(e.pointerId); if(ptrs.size<2) d0=null; };
+  box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
+  const mid = f => { const r=box.getBoundingClientRect(); zoomAt(k*f, r.left+r.width/2, r.top+r.height/2); };
+  return { in: () => mid(1.4), out: () => mid(1/1.4), reset: () => { k=1; tx=0; ty=0; apply(); } };
+}
+// мини-карта у фото: где стоял дрон и куда смотрела камера
+const MAPR = [0.9, 2, 4.5, 10], MAPS = [[.5,"500 м"],[1,"1 км"],[2,"2 км"],[5,"5 км"]]; let mapLv = 0;
+function photoMap(p, f){
+  if (p.lon == null || p.lat == null) return "";
+  const [cx, cy] = proj(p.lon, p.lat), R = MAPR[mapLv], vb = [cx-R, cy-R, 2*R, 2*R];
+  const z = Math.max(10, Math.min(15, Math.round(14.6 - Math.log2(R/0.9)))), n = 2**z, tx = lon => (lon+180)/360*n, ty = lat => { const r = lat*Math.PI/180; return (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n; };
+  const lonOf = x => x/n*360-180, latOf = y => Math.atan(Math.sinh(Math.PI*(1-2*y/n)))*180/Math.PI;
+  const dLon = R/D.proj.kx*1.3, dLat = R/D.proj.ky*1.3;
+  const x0 = Math.floor(tx(p.lon-dLon)), x1 = Math.floor(tx(p.lon+dLon)), y0 = Math.floor(ty(p.lat+dLat)), y1 = Math.floor(ty(p.lat-dLat));
+  let tiles = "";
+  for (let X = x0; X <= x1; X++) for (let Y = y0; Y <= y1; Y++) {
+    const [ax, ay] = proj(lonOf(X), latOf(Y)), [bx, by] = proj(lonOf(X+1), latOf(Y+1));
+    tiles += `<image href="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${Y}/${X}" x="${ax.toFixed(4)}" y="${ay.toFixed(4)}" width="${(bx-ax+.002).toFixed(4)}" height="${(by-ay+.002).toFixed(4)}" preserveAspectRatio="none"/>`;
+  }
+  const near = F.filter(q => { const b = bbox(q.g); return b[2] > vb[0] && b[0] < vb[0]+vb[2] && b[3] > vb[1] && b[1] < vb[1]+vb[3]; });
+  const sw = R/150;
+  const outl = near.map(q => `<path d="${pathOf(q.g)}" fill="${f && q.i===f.i ? "rgba(255,255,255,.08)" : "none"}" stroke="var(--${q.st||"none"})" stroke-width="${(f && q.i===f.i ? 2.6 : 1.3)*sw}" stroke-linejoin="round"/>`).join("");
+  let cam = "";
+  if (p.dir != null) {
+    const a = p.dir*Math.PI/180, L = R*.55, h = 32*Math.PI/180;
+    const pt = (ang, l) => [(cx+Math.sin(ang)*l).toFixed(4), (cy-Math.cos(ang)*l).toFixed(4)].join(",");
+    cam = `<path d="M${cx},${cy}L${pt(a-h,L)}A${L},${L} 0 0 1 ${pt(a+h,L)}Z" fill="rgba(255,214,90,.28)" stroke="#ffd65a" stroke-width="${sw}"/>
+      <line x1="${cx}" y1="${cy}" x2="${pt(a,L*.8).split(",")[0]}" y2="${pt(a,L*.8).split(",")[1]}" stroke="#ffd65a" stroke-width="${2.4*sw}" stroke-linecap="round"/>
+      <path d="M${pt(a,L*.95)}L${pt(a-.22,L*.72)}L${pt(a+.22,L*.72)}Z" fill="#ffd65a"/>`;
+  }
+  cam += `<circle cx="${cx}" cy="${cy}" r="${6*sw}" fill="#2c64a8" stroke="#fff" stroke-width="${2*sw}"/>`;
+  const [sl, st] = MAPS[mapLv], m = R*.09;
+  const sc = `<line x1="${vb[0]+m}" x2="${vb[0]+m+sl}" y1="${vb[1]+vb[3]-m}" y2="${vb[1]+vb[3]-m}" stroke="#fff" stroke-width="${2*sw}"/><text x="${vb[0]+m}" y="${vb[1]+vb[3]-R*.145}" fill="#fff" font-size="${R/14}" font-family="var(--ui)" paint-order="stroke" stroke="rgba(0,0,0,.6)" stroke-width="${sw*2}">${st}</text><text x="${vb[0]+vb[2]-R*.11}" y="${vb[1]+R*.22}" text-anchor="end" fill="#fff" font-size="${R/11}" font-weight="700" font-family="var(--ui)" paint-order="stroke" stroke="rgba(0,0,0,.6)" stroke-width="${sw*2}">С&#8593;</text>`;
+  return `<div class="lbmap"><div class="lbms"><svg viewBox="${vb.join(" ")}" role="img" aria-label="Где снято фото">${tiles}${outl}${cam}${sc}</svg><div class="lbmz"><button data-mz="-1" aria-label="Приблизить карту" title="Приблизить карту"${mapLv===0?" disabled":""}>+</button><button data-mz="1" aria-label="Отдалить карту" title="Отдалить карту"${mapLv===MAPR.length-1?" disabled":""}>&minus;</button></div></div>
+    <span class="mc"><b>Где снято фото.</b> ${p.dir != null ? "Жёлтый сектор - куда смотрела камера." : "Направление камеры не записано."} Обведены поля по цвету светофора${f ? `, ярче - ${esc(f.n)}` : ""}. Кнопки + и &minus; на карте - приблизить или отдалить. Снимок со спутника подгружается из интернета.</span></div>`;
+}
+function viewSeason(){
+  const byP = {}; Z.forEach(z => { const o = byP[z.p] ||= {n:0,ha:0}; o.n++; o.ha += z.ha; });
+  const maxHa = Math.max(...Object.values(byP).map(o=>o.ha));
+  const proofs = [["g01","Спутник и дрон совпали"],["g02","Дрон подтвердил редкий посев"],["g03","Где спутник не помогает"]].map(([id,t]) => { const gi = GR.findIndex(g => g.t.startsWith({g01:"Кошары",g02:"Поле 67",g03:"Горбатое"}[id])); return {gi, t}; }).filter(o => o.gi >= 0);
+  const explained = Z.filter(z => z.j && !/явного объяснения нет/.test(z.j)).length;
+  app.innerHTML = `<section class="view">
+    <div class="sec" style="margin-top:16px"><h2 style="font-family:var(--display);font-size:24px">Разбор сезона 2026 задним числом</h2>
+      <p class="lead" style="margin-top:0">Мы прошли все снимки спутника за лето (${DATES.length} дат с 4 июня по 31 августа) и нашли места, которые были слабее остального поля на нескольких снимках подряд. Одна плохая дата не считается: это часто облако. Каждый участок сверили с журналом работ и с фото дрона.</p>
+      <div class="tiles reveal">
+        <div class="tile zone"><b data-n="${Z.length}">0</b><span>слабых участков от 1 га</span></div>
+        <div class="tile zone"><b data-n="${Math.round(zoneHa)}">0</b><span>га всего, ${nf(zoneHa/sownHa*100,1)}% посевов</span></div>
+        <div class="tile ok"><b data-n="${explained}">0</b><span>объясняет журнал работ</span></div>
+        <div class="tile warn"><b data-n="${Z.length-explained}">0</b><span>надо смотреть на месте</span></div>
+      </div></div>
+    <div class="sec"><h2>Пять типичных картин</h2><p class="note">Каждый слабый участок похож на одну из пяти картин. По картине можно догадаться о причине.</p>
+      <div class="pats reveal">${Object.entries(PAT).map(([k,p])=>{const o=byP[k]||{n:0,ha:0};return `<div class="pat"><span class="nm"><span class="chip" style="--c:var(--${p[0]})">${esc(p[1])}</span></span><span class="num">${o.n} уч., ${nf(o.ha)} га</span><span class="meter"><i style="background:var(--${p[0]})" data-w="${o.ha/maxHa*100}"></i></span><span class="ex">${esc(p[2])}</span></div>`}).join("")}</div></div>
+    <div class="sec"><h2>Что подтвердил дрон</h2>
+      <div class="proof reveal">${proofs.map(o=>{const g=GR[o.gi], f=fieldByName[g.f[0]]; return `<div class="card"><img src="${M.photos[g.p[0]].img}" alt="${esc(g.t)}" data-ph="${g.p[0]}"><b>${esc(o.t)}</b><p class="note">${esc(g.k)}</p>${f?`<button class="btn" data-f="${f.i}">Поле ${esc(f.n)}</button>`:""}</div>`}).join("")}</div></div>
+    <div class="sec"><h2>Главные участки по важности</h2><p class="note">Сначала самые большие и самые устойчивые. Под каждым - что говорит журнал работ и что проверить в поле.</p>
+      <div class="zgrid" id="zg">${Z.slice(0,12).map(z=>zoneCard(z,true)).join("")}</div>
+      <button class="more" id="zmore">Показать все ${Z.length} участков</button></div>
+  </section>`;
+  app.querySelectorAll(".tile b").forEach(b => countUp(b, +b.dataset.n));
+  requestAnimationFrame(() => app.querySelectorAll(".meter i").forEach(i => i.style.width = i.dataset.w + "%"));
+  app.querySelectorAll(".proof img").forEach(im => im.onclick = () => openLB(+im.dataset.ph));
+  bindItems(app);
+  $("#zmore").onclick = e => { $("#zg").insertAdjacentHTML("beforeend", Z.slice(12).map(z=>zoneCard(z,true)).join("")); bindItems($("#zg")); e.target.remove(); };
+}
+function viewCrops(){
+  const by = {};
+  sown.forEach(f => { const o = by[f.c] ||= {fs:[],ha:0,ok:0,warn:0,bad:0,ask:0}; o.fs.push(f); o.ha += f.ha; o[f.st] += f.ha; });
+  const list = Object.entries(by).sort((a,b)=>b[1].ha-a[1].ha);
+  const spark = o => { const W=300,H=60; const avg = DATES.map((_,k)=>{ const v=o.fs.map(f=>f.s&&f.s[k]).filter(v=>v!=null); return v.length>=2 ? v.sort((a,b)=>a-b)[Math.floor(v.length/2)] : null; });
+    const p = avg.map((v,k)=>v==null?null:[ (Date.parse(DATES[k])-Date.parse(DATES[0]))/(Date.parse(DATES[DATES.length-1])-Date.parse(DATES[0]))*(W-4)+2, H-4-(v/.9)*(H-8)]).filter(Boolean);
+    return p.length>1 ? `<svg viewBox="0 0 ${W} ${H}" aria-label="Средняя зелень культуры за сезон" role="img"><polygon points="${p[0][0]},${H-2} ${p.map(q=>q.join(",")).join(" ")} ${p[p.length-1][0]},${H-2}" fill="var(--accent)" opacity=".12"/><polyline points="${p.map(q=>q.join(",")).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="2"/><text x="2" y="${H-6}" class="lbl" style="font-size:10px;fill:var(--muted)">июнь</text><text x="${W-2}" y="${H-6}" text-anchor="end" style="font-size:10px;fill:var(--muted)">август</text></svg>` : ""; };
+  app.innerHTML = `<section class="view"><div class="sec" style="margin-top:16px"><h2 style="font-family:var(--display);font-size:24px">Как прошли культуры</h2><p class="note">Полоска - доля площади в норме, под вопросом и с проблемой. Кривая - средняя зелень культуры за лето. Лучшее поле - с самым высоким пиком зелени.</p>
+    <div class="crops reveal">${list.map(([c,o])=>{ const withPk = o.fs.filter(f=>f.pk!=null).sort((a,b)=>b.pk-a.pk); const best = withPk[0], worst = withPk[withPk.length-1];
+      return `<div class="crop"><div class="row"><span class="nm">${esc(cap(c))}</span><span class="ha">${o.fs.length} полей, ${nf(o.ha)} га</span></div>
+      <div class="sbar"><i style="width:0;background:var(--ok)" data-w="${o.ok/o.ha*100}"></i><i style="width:0;background:var(--warn)" data-w="${o.warn/o.ha*100}"></i><i style="width:0;background:var(--bad)" data-w="${o.bad/o.ha*100}"></i><i style="width:0;background:var(--ask)" data-w="${o.ask/o.ha*100}"></i></div>
+      <div class="spark">${spark(o)}</div>
+      <span class="ft">В норме ${nf(o.ok/o.ha*100)}% площади.${best&&withPk.length>1?` Лучшее поле <b>${esc(best.n)}</b>, слабее всех <b>${esc(worst.n)}</b>.`:""}</span>
+      <details><summary>Все поля культуры</summary><div class="list">${o.fs.slice().sort((a,b)=>({bad:0,ask:1,warn:2,ok:3}[a.st]-{bad:0,ask:1,warn:2,ok:3}[b.st])||b.ha-a.ha).map(f=>`<button class="item ${f.st}" data-f="${f.i}"><span class="stripe"></span><span><div class="t">${esc(f.n)}</div><div class="r">${esc(f.st==="ok"?"норма":(f.why||ST[f.st]))}</div></span><span class="ha">${nf(f.ha)} га</span></button>`).join("")}</div></details></div>`}).join("")}</div></div></section>`;
+  requestAnimationFrame(() => app.querySelectorAll(".sbar i").forEach(i => i.style.width = i.dataset.w + "%"));
+  bindItems(app);
+}
+let photoFilter = "all";
+function viewPhotos(){
+  const dates = [...new Set(M.pts.map(p=>p.d))].sort();
+  const fieldsShot = [...new Set(M.pts.map(p=>p.f).filter(Boolean))];
+  const nph = M.pts.reduce((a,p)=>a+p.n,0);
+  const verd = [...new Map(GR.map(g=>[g.v,g])).values()];
+  app.innerHTML = `<section class="view"><div class="sec" style="margin-top:16px"><h2 style="font-family:var(--display);font-size:24px">Облёты дрона</h2>
+    <p class="lead" style="margin-top:0">За сезон дрон сделал <b>${nph} фото</b> в ${M.pts.length} точках над <b>${fieldsShot.length} полями</b>: ${dates.map(fmtD).join(", ")}. Каждое место съёмки сверено со снимком спутника за эти дни и с журналом работ.</p>
+    <div class="mapcard"><div id="pmap"></div><p class="note">Синие точки - места съёмки. Нажмите на поле, чтобы открыть его карточку.</p></div>
+    <h2 style="margin-top:8px">Что показали фото</h2>
+    <div class="chips" id="pch"><button data-v="all" aria-pressed="true">Все (${GR.length})</button>${verd.map(g=>`<button data-v="${esc(g.v)}" aria-pressed="false">${esc(g.vt)} (${GR.filter(x=>x.v===g.v).length})</button>`).join("")}</div>
+    <div class="zgrid" id="pg"></div>
+    <p class="note">Описания составлены по фото, снимкам спутника и журналу работ SmartAgro (разбор сезона, 2 ноября). ${window.DASH.demo ? "В демо по 3-4 фото с каждого места, в рабочей версии будут все." : "Нажмите на фото, чтобы открыть его крупно и приблизить."}</p>
+    <div class="card help"><h3>Видео с дрона</h3><p>Следующим шагом сюда можно добавить видео облётов: рядом с плеером карта, по которой движется точка дрона и направление камеры, нажатие на маршрут перематывает видео.</p></div>
+  </div></section>`;
+  const pm = farmMap($("#pmap"), {onPick: i => go("f-"+i), start: qbox(M.pts.map(p=>proj(p.lon,p.lat)),0,1)}); pm.paint("photos");
+  const drawG = () => { const gs = GR.map((g,i)=>i).filter(i => photoFilter==="all" || GR[i].v===photoFilter);
+    $("#pg").innerHTML = gs.map(gi => `<div class="card">${groupBlock(gi)}${GR[gi].f.length?`<div class="btnrow" style="margin-top:10px">${GR[gi].f.filter(n=>fieldByName[n]).map(n=>`<button class="btn" data-f="${fieldByName[n].i}">Поле ${esc(n)}</button>`).join("")}</div>`:""}</div>`).join("");
+    bindPhotos($("#pg")); bindItems($("#pg")); };
+  $("#pch").querySelectorAll("button").forEach(b => b.onclick = () => { photoFilter = b.dataset.v; $("#pch").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b)); drawG(); });
+  drawG();
+}
+function viewRec(){
+  const byN = n => F.find(f => f.n === n);
+  const fbtn = n => { const f = byN(n); return f ? `<button class="btn" data-f="${f.i}">${esc(n)}</button>` : `<span class="btn" style="cursor:default">${esc(n)}</span>`; };
+  const lag = REC.lag.map(byN).filter(Boolean), rp = REC.rp.map(byN).filter(Boolean);
+  const ha = a => nf(a.reduce((s,f)=>s+f.ha,0));
+  const bd = RT.больше_данных || {};
+  app.innerHTML = `<section class="view">
+    <div class="sec" style="margin-top:16px"><h2 style="font-family:var(--display);font-size:24px">Выводы сезона 2026 и что делать в 2027</h2>
+      ${RT.главное ? `<p class="lead" style="margin-top:0">${esc(RT.главное)}</p>` : ""}
+      ${RT.оговорка ? `<p class="caveat"><b>Важная оговорка.</b> ${esc(RT.оговорка)}</p>` : ""}
+      <div class="tiles reveal" style="margin-top:14px">
+        <div class="tile bad"><b data-n="${lag.length}">0</b><span>полей отставали от соседей, ${ha(lag)} га</span></div>
+        <div class="tile ask"><b data-n="${rp.length}">0</b><span>полей рапса переведены в пар, ${ha(rp)} га</span></div>
+        <div class="tile zone"><b data-n="${Z.length}">0</b><span>слабых пятен внутри полей, ${nf(zoneHa)} га</span></div>
+        <div class="tile warn"><b data-n="${REC.q.length || (RT.вопросы||[]).length}">0</b><span>вопросов агроному</span></div>
+      </div></div>
+    ${(RT.выводы||[]).length ? `<div class="sec"><h2>Главное о сезоне</h2><ul class="rlist">${RT.выводы.map(([t,x])=>`<li><b>${esc(t)}</b>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+    ${lag.length ? `<div class="sec"><h2>Поля, которые отставали от соседей</h2><p class="note">Июль, сравнение с полями той же культуры и с похожим сроком сева. Культура и дата сева взяты из журнала работ.</p><div class="list">${lag.map(itemHTML).join("")}</div></div>` : ""}
+    ${rp.length ? `<div class="sec"><h2>Рапс, переведённый в пар</h2><p class="note">В базе пар, по журналу рапс посеян 17-24 мая и задискован 4-18 июля. Спутник видит это точно в дни работ. Ждём ответа агронома.</p><div class="btnrow">${rp.map(f=>fbtn(f.n)).join("")}</div></div>` : ""}
+    ${REC.rows.length ? `<div class="sec"><h2>По полям: причина и что делать</h2><p class="note">Первыми стоит разобрать поля, где причину можно убрать уже в 2027 году. Причины - версии, подтвердить должен агроном.</p>
+      <div class="rgrid">${REC.rows.map(r=>`<div class="card"><h3>${esc((r.поля||[]).slice(0,4).join(", "))}${(r.поля||[]).length>4?` и ещё ${(r.поля||[]).length-4}`:""}</h3><span class="note">${esc(r.культура||"")}</span><dl class="prow"><dt>Что было</dt><dd>${esc(r.что_было)}</dd><dt>Вероятная причина</dt><dd>${esc(r.причина)}</dd><dt>Что делать</dt><dd><b>${esc(r.что_делать)}</b></dd></dl><div class="btnrow" style="margin-top:10px">${(r.поля||[]).filter(byN).slice(0,6).map(fbtn).join("")}</div></div>`).join("")}</div></div>` : ""}
+    ${(RT.на_2027||[]).length ? `<div class="sec"><h2>Рекомендации на 2027</h2><p class="note">Главное - не новые средства, а полнота работ и быстрая проверка всходов.</p><div class="rgrid">${RT.на_2027.map(([t,xs])=>`<div class="card"><h3>${esc(t)}</h3><ul>${xs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div></div>` : ""}
+    ${bd.пункты ? `<div class="sec"><h2>Больше данных - точнее рекомендации</h2><p class="lead" style="margin-top:0;font-size:16px">${esc(bd.текст)}</p><ul class="rlist">${bd.пункты.map(([t,x])=>`<li><b>${esc(t)}</b>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+    ${(RT.расхождения||[]).length ? `<div class="sec"><h2>Почему возможны расхождения с тем, что было на поле</h2><div class="rgrid">${RT.расхождения.map(([t,x])=>`<div class="card"><h3>${esc(t)}</h3><p class="note">${esc(x)}</p></div>`).join("")}</div></div>` : ""}
+    ${(REC.q.length || (RT.вопросы||[]).length) ? `<div class="sec"><h2>Вопросы агроному</h2><p class="note">Ответы агронома уточнят выводы, базу и правила для плагина и дашборда.</p><div class="card" style="overflow-x:auto"><table class="qtab"><thead><tr><th>№</th><th>Вопрос</th><th class="dat">Что видно по данным</th><th>Ответ</th></tr></thead><tbody>${(REC.q.length ? REC.q.map(q=>[q.n,q.вопрос,q.данные,q.ответ]) : RT.вопросы.map((q,k)=>[k+1,q[0],q[1],""])).map(([n,q,d,a])=>`<tr><td>${esc(n)}</td><td>${esc(q)}</td><td class="dat note">${esc(d)}</td><td class="${a?"":"ans"}">${a?esc(a):"ждём"}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+    <p class="note">Выводы составлены по снимкам Sentinel-2, журналу работ SmartAgro и фото дрона${REC.upd?`, обновлено ${esc(REC.upd)}`:""}.</p>
+  </section>`;
+  app.querySelectorAll(".tile b").forEach(b => countUp(b, +b.dataset.n));
+  bindItems(app);
+}
+// ---------- маршруты ----------
+function go(h){ if (location.hash.slice(1) === h) route(); else location.hash = h; }
+function route(){
+  stop();
+  const h = location.hash.slice(1) || "main";
+  const tab = h.startsWith("f-") ? null : h;
+  document.querySelectorAll('nav.tabs [role="tab"]').forEach(b => b.setAttribute("aria-selected", b.dataset.tab === (tab || "main")));
+  if (h.startsWith("f-")) viewField(+h.slice(2));
+  else if (h === "season") viewSeason();
+  else if (h === "crops") viewCrops();
+  else if (h === "photos") viewPhotos();
+  else if (h === "rec") viewRec();
+  else viewMain();
+  window.scrollTo({top:0, behavior: reduce ? "auto" : "smooth"});
+}
+document.querySelectorAll('nav.tabs [role="tab"]').forEach(b => b.onclick = () => go(b.dataset.tab));
+addEventListener("hashchange", route);
+route();
+}
+BOOT();
+</script>
+
+</body>
+</html>
