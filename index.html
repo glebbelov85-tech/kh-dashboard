@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <!-- Шаблон дашборда для руководителя. Данные берутся из data.js рядом
      (его пишет кнопка "Обновить дашборд", dashboard_export.py). -->
-<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("tk_theme")||"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<style>:root[data-theme="dark"]{color-scheme:dark;background:#141918}:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
 <title>Поля Тритикум 2026</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=PT+Serif:wght@700&display=swap">
 <style>
@@ -46,6 +47,7 @@ header.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding
 header.top h1{font-family:var(--display);font-size:24px;margin:0;text-wrap:balance}
 header.top .upd{color:var(--muted);font-size:13px}
 .tag{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:2px 6px;margin-left:auto}
+.themebtn{align-self:center;border:1px solid var(--line);background:var(--soft);color:var(--fg);font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:5px 12px;cursor:pointer;white-space:nowrap}
 h2{font-size:18px;font-weight:800;margin:0;text-wrap:balance}
 h3{font-size:12px;font-weight:700;margin:0;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 p{margin:0}
@@ -305,6 +307,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
     <h1>КХ Тритикум: сезон 2026</h1>
     <span class="upd" id="upd"></span>
     <span class="tag" id="tag">демо на настоящих данных</span>
+    <button class="themebtn" id="themebtn" type="button"></button>
   </header>
   <main id="app"></main>
 </div>
@@ -955,5 +958,12 @@ route();
 BOOT();
 </script>
 
+<script>
+// переключатель темы: по умолчанию тёмная, выбор запоминается на этом устройстве
+(function(){ const b = document.getElementById("themebtn"), r = document.documentElement;
+  const draw = () => { const d = r.dataset.theme !== "light"; b.textContent = d ? "\u2600 Светлая" : "\u263E Тёмная"; b.title = b.ariaLabel = d ? "Включить светлую тему" : "Включить тёмную тему"; };
+  b.onclick = () => { r.dataset.theme = r.dataset.theme === "light" ? "dark" : "light"; try { localStorage.setItem("tk_theme", r.dataset.theme); } catch (e) {} draw(); };
+  draw(); })();
+</script>
 </body>
 </html>
