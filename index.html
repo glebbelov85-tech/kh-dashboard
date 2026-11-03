@@ -78,7 +78,7 @@ p{margin:0}
 .mapbox svg:active{cursor:grabbing}
 .fpath{stroke:var(--card);stroke-width:.6;vector-effect:non-scaling-stroke;transition:fill .45s ease;cursor:pointer}
 .fpath:hover{stroke:var(--fg);stroke-width:1.5}
-.fpath:focus{outline:none}
+.mapbox svg :focus,.mapbox svg:focus{outline:none}
 .fpath.sel{stroke:var(--fg);stroke-width:2.5}
 .zpath{fill:none;stroke:var(--zone);stroke-width:1.4;vector-effect:non-scaling-stroke;pointer-events:none}
 .ppt{fill:#2c64a8;stroke:#fff;stroke-width:1;vector-effect:non-scaling-stroke;pointer-events:none}
@@ -101,6 +101,30 @@ body.mapfs nav.tabs{display:none}
 .fssub{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 4px}
 .player .step{border:1px solid var(--line);background:var(--soft);color:var(--fg);width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex:none}
 .fpath.dim{opacity:.13}
+.fpath.hot{stroke:var(--bad);stroke-width:2.5;animation:hot 1.6s ease-in-out infinite}
+.fpath.hotw{stroke:var(--warn);stroke-width:2}
+@keyframes hot{50%{stroke-width:5}}
+@media(prefers-reduced-motion:reduce){.fpath.hot{animation:none}}
+.fsover{position:absolute;left:8px;top:8px;right:60px;display:flex;flex-wrap:wrap;gap:6px;z-index:2;pointer-events:none}
+.fsover button{pointer-events:auto;border:1px solid var(--line);background:var(--card);color:var(--fg);font:inherit;font-size:14px;font-weight:700;border-radius:999px;padding:8px 14px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.fsover button[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:#fff}
+.sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:18}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:78vh;max-height:78dvh;overflow-y:auto;background:var(--card);border-radius:16px 16px 0 0;z-index:19;padding:14px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));box-shadow:0 -6px 24px rgba(0,0,0,.3)}
+@media(min-width:700px){.sheet{left:50%;right:auto;width:520px;transform:translateX(-50%)}}
+.sheet .sh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.sheet .sh b{font-size:17px}
+.sheet .close{border:0;background:var(--soft);color:var(--fg);width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer}
+.crop-opt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--soft);color:var(--fg);font:inherit;border-radius:12px;padding:10px 12px;margin-top:8px;cursor:pointer}
+.crop-opt[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.crop-opt .t{display:flex;justify-content:space-between;gap:8px;font-weight:800}
+.crop-opt .m{font-size:13px;color:var(--muted);margin-top:2px}
+.crop-opt .bar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:6px;background:var(--line)}
+.crop-opt .bar i{display:block}
+.attn-list{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.attn-list button{display:grid;grid-template-columns:8px 1fr auto;gap:10px;align-items:center;text-align:left;border:1px solid var(--line);background:var(--soft);color:var(--fg);font:inherit;border-radius:10px;padding:8px 10px;cursor:pointer}
+.attn-list button .s{width:8px;height:100%;min-height:28px;border-radius:4px}
+.attn-list button .r{font-size:12.5px;color:var(--muted)}
+.attn-list button[aria-pressed="true"]{border-color:#2c64a8;box-shadow:inset 0 0 0 1px #2c64a8}
 .mapcard.fs .fpath.sel{stroke:#2c64a8;stroke-width:3}
 #fsField{background:var(--soft);border-radius:10px;padding:10px 12px;margin-top:8px}
 #fsField svg{width:100%;height:auto}
@@ -463,7 +487,10 @@ function farmMap(host, opts={}){
       if (mode === "state") p.style.fill = `var(--${f.st})`;
       else if (mode === "green") { const v = f.s ? f.s[di] : null; p.style.fill = f.st==="none" && v==null ? "var(--none)" : (rampColor(v) || "url(#hatch)"); }
       else p.style.fill = `var(--none)`;
-      p.classList.toggle("dim", !!mapState.crop && f.c !== mapState.crop);
+      const att = !!mapState.attn && (f.st === "bad" || f.st === "warn");
+      p.classList.toggle("dim", (!!mapState.crop && f.c !== mapState.crop) || (!!mapState.attn && !att));
+      p.classList.toggle("hot", !!mapState.fs && !!mapState.attn && f.st === "bad" && inCrop(f));
+      p.classList.toggle("hotw", !!mapState.fs && !!mapState.attn && f.st === "warn" && inCrop(f));
       p.classList.toggle("sel", !!mapState.fs && mapState.pick === f.i);
     });
     $(".zones", svg).style.display = mode === "state" ? "" : "none";
@@ -557,8 +584,12 @@ function setMapFs(on){
   const b = $("#mapfs"); b.innerHTML = on ? "&times; Свернуть" : "&#x26F6; На весь экран"; b.setAttribute("aria-label", on ? "Свернуть карту" : "Карта на весь экран");
   try { if (on && !document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
         if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
-  if (!on) { mapState.crop = null; mapState.pick = null; }
-  document.onkeydown = on ? (e => { if (e.key === "Escape") setMapFs(false);
+  if (!on) { mapState.crop = null; mapState.pick = null; mapState.attn = false; closeSheet(); }
+  const mb = $("#mapHost .mapbox"), ov = $(".fsover", mb);
+  if (on && !ov) mb.insertAdjacentHTML("beforeend", `<div class="fsover"><button id="fscropbtn"></button><button id="fsattn" aria-pressed="false">&#9888; Требуют внимания</button></div>`);
+  if (!on && ov) ov.remove();
+  if (on) { $("#fscropbtn").onclick = openCropSheet; $("#fsattn").onclick = () => { mapState.attn = !mapState.attn; MAP.paint(mapState.mode, mapState.di); drawFs(); }; }
+  document.onkeydown = on ? (e => { if (e.key === "Escape") { if ($(".sheet")) closeSheet(); else setMapFs(false); return; }
     if (mapState.mode === "green" && (e.key === "ArrowRight" || e.key === "ArrowLeft")) { stop(); mapState.di = Math.max(0, Math.min(DATES.length-1, mapState.di + (e.key === "ArrowRight" ? 1 : -1))); mapState.show && mapState.show(); } }) : null;
   MAP.paint(mapState.mode, mapState.di); drawFs();
   if (on) card.scrollTop = 0;
@@ -566,16 +597,31 @@ function setMapFs(on){
 document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && mapState.fs && $("#mapcard")) setMapFs(false); });
 const CROPLIST = (() => { const by = {}; sown.forEach(f => { (by[f.c] ||= {c:f.c, n:0, ha:0}); by[f.c].n++; by[f.c].ha += f.ha; }); return Object.values(by).sort((a,b) => b.ha - a.ha); })();
 const inCrop = f => !mapState.crop || f.c === mapState.crop;
+function closeSheet(){ document.querySelectorAll(".sheet,.sheetbg").forEach(e => e.remove()); }
+function openCropSheet(){
+  closeSheet();
+  const opt = (c, name, fs) => { const ha = fs.reduce((a,f) => a+f.ha, 0), n = k => fs.filter(f => f.st === k).length, hk = k => fs.filter(f => f.st === k).reduce((a,f) => a+f.ha, 0);
+    return `<button class="crop-opt" data-c="${esc(c)}" aria-pressed="${(mapState.crop||"") === c}"><span class="t"><span>${esc(name)}</span><span>${nf(ha)} га</span></span>
+      <div class="m">${fs.length} ${wd(fs.length,"поле")}: норма ${n("ok")}, присмотреться ${n("warn")}, <b style="color:var(--bad)">проблема ${n("bad")}</b>${n("ask") ? `, вопрос ${n("ask")}` : ""}</div>
+      <span class="bar">${["ok","warn","bad","ask"].map(k => `<i style="width:${ha ? hk(k)/ha*100 : 0}%;background:var(--${k})"></i>`).join("")}</span></button>`; };
+  document.body.insertAdjacentHTML("beforeend", `<div class="sheetbg"></div><div class="sheet" role="dialog" aria-label="Выбор культуры"><div class="sh"><b>Какую культуру показать</b><button class="close" aria-label="Закрыть">&times;</button></div>
+    ${opt("", "Все культуры", sown)}${CROPLIST.map(o => opt(o.c, cap(o.c), sown.filter(f => f.c === o.c))).join("")}</div>`);
+  $(".sheetbg").onclick = closeSheet; $(".sheet .close").onclick = closeSheet;
+  document.querySelectorAll(".crop-opt").forEach(b => b.onclick = () => { mapState.crop = b.dataset.c || null; if (mapState.pick != null && !inCrop(F[mapState.pick])) mapState.pick = null; closeSheet(); MAP.paint(mapState.mode, mapState.di); drawFs(); });
+}
 function drawFs(){
   const h = $("#fsHost"); if (!h) return;
   if (!mapState.fs) { h.innerHTML = ""; return; }
   const fs = sown.filter(inCrop), ha = fs.reduce((a,f) => a+f.ha, 0), cnt = k => fs.filter(f => f.st === k).length;
-  h.innerHTML = `<div class="fssub">Культура</div>
-    <div class="fsrow" id="fscrop"><button data-c="" aria-pressed="${!mapState.crop}">Все</button>${CROPLIST.map(o => `<button data-c="${esc(o.c)}" aria-pressed="${mapState.crop===o.c}">${esc(cap(o.c))} · ${o.n}</button>`).join("")}</div>
-    <p class="note" style="margin:2px 0 0">${mapState.crop ? esc(cap(mapState.crop)) : "Все культуры"}: ${fs.length} ${wd(fs.length,"поле")}, ${nf(ha)} га. Норма ${cnt("ok")}, присмотреться ${cnt("warn")}, проблема ${cnt("bad")}${cnt("ask") ? `, вопрос агроному ${cnt("ask")}` : ""}.</p>
+  const cb = $("#fscropbtn"); if (cb) cb.innerHTML = `&#127806; ${mapState.crop ? esc(cap(mapState.crop)) : "Все культуры"} &#9662;`;
+  const ab = $("#fsattn"); if (ab) ab.setAttribute("aria-pressed", !!mapState.attn);
+  const rank = {bad:0, warn:1}, hot = fs.filter(f => f.st === "bad" || f.st === "warn").sort((a,b) => rank[a.st]-rank[b.st] || b.ha-a.ha);
+  h.innerHTML = `<p class="note" style="margin:6px 0 0"><b>${mapState.crop ? esc(cap(mapState.crop)) : "Все культуры"}</b>: ${fs.length} ${wd(fs.length,"поле")}, ${nf(ha)} га. Норма ${cnt("ok")}, присмотреться ${cnt("warn")}, <b style="color:var(--bad)">проблема ${cnt("bad")}</b>${cnt("ask") ? `, вопрос агроному ${cnt("ask")}` : ""}.</p>
     ${mapState.mode === "green" ? `<div class="fssub">Дата снимка</div><div class="fsrow" id="fsdates"></div><p class="note" style="margin:0">Пунктиром - даты, когда больше половины полей под облаками.</p>
     <div class="fssub">Скорость проигрывания</div><div class="fsrow" id="fsspeed">${[["Медленно",1400],["Обычно",750],["Быстро",350]].map(([t,v]) => `<button data-v="${v}" aria-pressed="${(mapState.speed||750)===v}">${t}</button>`).join("")}</div>` : ""}
-    <div id="fsField"></div>`;
+    <div id="fsField"></div>
+    ${mapState.attn ? `<div class="fssub">Требуют внимания: ${hot.length}</div>${hot.length ? `<div class="attn-list">${hot.map(f => `<button data-af="${f.i}" aria-pressed="${mapState.pick===f.i}"><span class="s" style="background:var(--${f.st})"></span><span><b>${esc(f.n)}</b> <span class="r">${esc(cap(f.c).toLowerCase())}, ${nf(f.ha)} га</span><div class="r">${esc(f.why || ST[f.st])}</div></span><span class="r">${esc(ST[f.st])}</span></button>`).join("")}</div>` : `<p class="note">Полей, требующих внимания, нет.</p>`}` : ""}`;
+  h.querySelectorAll("[data-af]").forEach(b => b.onclick = () => { const i = +b.dataset.af; mapState.pick = i; MAP.paint(mapState.mode, mapState.di); MAP.focusField(i); drawFs(); const c = $("#mapcard"); if (c) c.scrollTo({top:0, behavior:"smooth"}); });
   h.querySelectorAll("#fscrop button").forEach(b => b.onclick = () => { mapState.crop = b.dataset.c || null; if (mapState.pick != null && !inCrop(F[mapState.pick])) mapState.pick = null; MAP.paint(mapState.mode, mapState.di); drawFs(); });
   h.querySelectorAll("#fsspeed button").forEach(b => b.onclick = () => { mapState.speed = +b.dataset.v; h.querySelectorAll("#fsspeed button").forEach(x => x.setAttribute("aria-pressed", x===b)); if (mapState.playing) { stop(); play(mapState.show); } });
   fsDates(); drawFsField();
@@ -890,7 +936,7 @@ function viewRec(){
 function go(h){ if (location.hash.slice(1) === h) route(); else location.hash = h; }
 function route(){
   stop();
-  if (mapState.fs) { mapState.fs = false; mapState.crop = null; mapState.pick = null; document.body.style.overflow = ""; document.body.classList.remove("mapfs"); document.onkeydown = null; try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {} }
+  if (mapState.fs) { mapState.fs = false; mapState.crop = null; mapState.pick = null; document.body.style.overflow = ""; document.body.classList.remove("mapfs"); mapState.attn = false; closeSheet(); document.onkeydown = null; try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {} }
   const h = location.hash.slice(1) || "main";
   const tab = h.startsWith("f-") ? null : h;
   document.querySelectorAll('nav.tabs [role="tab"]').forEach(b => b.setAttribute("aria-selected", b.dataset.tab === (tab || "main")));
