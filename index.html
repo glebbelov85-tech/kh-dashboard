@@ -197,6 +197,11 @@ body.mapfs nav.tabs{display:none}
   section.view,.reveal>*{animation:none!important}
   .qta{border:1px solid #bbb;min-height:2.5em}
 }
+/* годы */
+.yrs{align-self:center}
+.yrs button{font-variant-numeric:tabular-nums}
+.ytab tr.now td{font-weight:800}
+.ytab td .badge{font-size:11.5px;padding:2px 8px}
 /* вопросы агроному */
 .qag{margin-top:10px}
 .qai{display:flex;flex-direction:column;gap:8px}
@@ -363,7 +368,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 
 <div class="wrap">
   <header class="top">
-    <h1>КХ Тритикум: сезон 2026</h1>
+    <h1 id="h1">КХ Тритикум: сезон 2026</h1>
+    <div class="seg yrs" id="yrs" role="group" aria-label="Сезон" hidden></div>
     <span class="upd" id="upd"></span>
     <span class="tag" id="tag">демо на настоящих данных</span>
     <button class="themebtn" id="themebtn" type="button"></button>
@@ -449,9 +455,35 @@ function BOOT(){
 }
 </script>
 <script>
+// данные прошлого сезона в том же виде, что и текущий: контуры 2026, зелень и культура года
+function tkYearView(B, y){
+  const Y = (B.years || {})[y]; if (!Y || String(y) === String(B.year) || !(Y.dates || []).length) return B;
+  const fields = B.core.fields.map(f => { const o = Y.f[f.i] || {}, s = o.s || null; const v = s ? s.filter(x => x != null) : [];
+    return {i:f.i, n:f.n, ha:f.ha, g:f.g, c:o.c || "", jc:o.c || "", s, m:o.m || null, st:o.st || "none", why:o.why || "", jul:o.jul ?? null,
+      pk: v.length ? Math.max(...v) : null, w:[], zh:0, zn:0, sow:null, lbl:"", note:"", p:o.p || "", y:o.y, yk:o.yk, wk:o.wk}; });
+  const R = Y.rec || {};
+  return {...B, year:+y, core:{...B.core, dates:Y.dates, zdates:[], fields, zones:[]}, media:{photos:[], groups:[], pts:[]},
+    rec:{text:R, rows:[], lag:fields.filter(f => f.st === "bad").map(f => f.n), rp:[], q:[], upd:R.дата || ""}, cmp:null, plan27:null, past:true};
+}
+function tkSetYear(y){
+  const B = window.DASH_BASE; window.DASH = tkYearView(B, y);
+  try { localStorage.setItem("tk_year", String(y)); } catch (e) {}
+  MAIN();
+}
 function MAIN(){
+if (!window.DASH_BASE) { window.DASH_BASE = window.DASH; let y = ""; try { y = localStorage.getItem("tk_year") || ""; } catch (e) {} if (y) window.DASH = tkYearView(window.DASH_BASE, y); }
 const D = window.DASH.core, M = window.DASH.media;
 const DATES = D.dates, F = D.fields, Z = D.zones, PAT = D.pat;
+const BASE = window.DASH_BASE || window.DASH, CUR = BASE.year || 2026, YR = window.DASH.year || CUR, PAST = YR !== CUR, NX = CUR + 1;
+const YEARS = [...new Set([...Object.keys(BASE.years || {}).filter(y => y === String(CUR) || ((BASE.years[y].dates || []).length)), String(CUR)])].sort();
+const SPOTS = BASE.spots || [];
+// культура, предшественник и урожай поля по годам (для карточки поля)
+const yearInfo = i => YEARS.map(y => { const o = ((BASE.years || {})[y] || {f:{}}).f[i] || {}; const cur = y === String(CUR), bf = BASE.core.fields[i];
+  return {y:+y, c: cur ? bf.c : o.c, p:o.p, yl:o.y, yk:o.yk, jul:o.jul, s: cur ? bf.s : o.s, dates: cur ? BASE.core.dates : ((BASE.years[y] || {}).dates || []), wk:o.wk}; });
+{ const h = document.getElementById("h1"); if (h) h.textContent = `КХ Тритикум: сезон ${YR}`; document.title = `Поля Тритикум ${YR}`;
+  const yb = document.getElementById("yrs");
+  if (yb) { yb.hidden = YEARS.length < 2; yb.innerHTML = YEARS.map(y => `<button data-y="${y}" aria-pressed="${+y === YR}">${y}</button>`).join("");
+    yb.querySelectorAll("button").forEach(b => b.onclick = () => { if (+b.dataset.y !== YR) tkSetYear(b.dataset.y); }); } }
 const $ = (s, r=document) => r.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const nf = (x, d=0) => Number(x).toLocaleString("ru-RU", {minimumFractionDigits:d, maximumFractionDigits:d});
@@ -465,9 +497,11 @@ const shortD = s => { const [y,m,d] = s.split("-"); return `${d}.${m}`; };
 const cap = s => s ? s.charAt(0) + s.slice(1).toLowerCase() : "без культуры";
 const ST = {ok:"норма", warn:"присмотреться", bad:"проблема", none:"без посева", ask:"вопрос агроному"};
 const REC = window.DASH.rec || {text:{}, rows:[], lag:[], rp:[], q:[]}, RT = REC.text || {};
+const NEXT = RT.на_2027 || RT.дальше || [];
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 { const b = window.DASH.built || ""; const bd = b ? fmtD(b.slice(0,10)) + " " + b.slice(0,4) : "";
-  $("#upd").textContent = `Снимки спутника ${fmtD(DATES[0])} - ${fmtD(DATES[DATES.length-1])}, облёты дрона ${[...new Set(M.pts.map(p=>p.d))].sort().map(shortD).join(", ")}. Собрано ${bd}`;
+  const fl = [...new Set(M.pts.map(p=>p.d))].sort().map(shortD).join(", ");
+  $("#upd").textContent = `Снимки спутника ${fmtD(DATES[0])} - ${fmtD(DATES[DATES.length-1])}${fl ? `, облёты дрона ${fl}` : ""}${PAST ? ". Разбор задним числом" : ""}. Собрано ${bd}`;
   if (!window.DASH.demo) $("#tag").textContent = "только просмотр"; }
 
 // ---------- общие расчёты ----------
@@ -572,12 +606,13 @@ function viewMain(){
   const haOf = a => a.reduce((s,f)=>s+f.ha,0);
   const attn = bad.slice().sort((a,b) => (b.zh - a.zh) || ((a.jul??0) - (b.jul??0)));
   app.innerHTML = `<section class="view">
-    <p class="lead">Сезон 2026 в целом прошёл ровно. Слабые участки нашлись на <b>${nf(zoneHa)} га</b>, это ${nf(zoneHa/sownHa*100,1)}% посевов. Внимания требуют <b>${bad.length} ${wd(bad.length,"поле")}</b>, ещё ${warn.length} стоит осмотреть при случае.</p>
+    ${PAST ? `<p class="lead">Сезон ${YR} разобран задним числом по снимкам спутника${(BASE.years[YR] || {}).rec && YR >= 2025 ? " и журналу работ" : ""}. Заметно отставали от соседних полей той же культуры <b>${bad.length} ${wd(bad.length,"поле")}</b>, ещё ${warn.length} стоит посмотреть. Фото дрона и слабые участки внутри полей есть только за ${CUR} год.</p>`
+      : `<p class="lead">Сезон ${YR} в целом прошёл ровно. Слабые участки нашлись на <b>${nf(zoneHa)} га</b>, это ${nf(zoneHa/sownHa*100,1)}% посевов. Внимания требуют <b>${bad.length} ${wd(bad.length,"поле")}</b>, ещё ${warn.length} стоит осмотреть при случае.</p>`}
     <div class="tiles reveal" style="margin-top:16px">
       <div class="tile ok"><b data-n="${ok.length}">0</b><span>${wd(ok.length,"поле")} в норме, ${nf(haOf(ok))} га</span></div>
       <div class="tile warn"><b data-n="${warn.length}">0</b><span>присмотреться, ${nf(haOf(warn))} га</span></div>
       <div class="tile bad"><b data-n="${bad.length}">0</b><span>${wd(bad.length,"поле")} с проблемой, ${nf(haOf(bad))} га</span></div>
-      <div class="tile zone"><b data-n="${Z.length}">0</b><span>${pl(Z.length,"слабый участок","слабых участка","слабых участков")}, ${nf(zoneHa)} га</span></div>
+      ${Z.length ? `<div class="tile zone"><b data-n="${Z.length}">0</b><span>${pl(Z.length,"слабый участок","слабых участка","слабых участков")}, ${nf(zoneHa)} га</span></div>` : ""}
     </div>
     <div class="two">
       <div class="stack">
@@ -657,7 +692,8 @@ function setMapFs(on){
   MAP.paint(mapState.mode, mapState.di); drawFs();
   if (on) card.scrollTop = 0;
 }
-document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && mapState.fs && $("#mapcard")) setMapFs(false); });
+window.__tkFs = () => { if (!document.fullscreenElement && mapState.fs && $("#mapcard")) setMapFs(false); };
+if (!window.__tkFsL) { window.__tkFsL = 1; document.addEventListener("fullscreenchange", () => window.__tkFs()); }
 const CROPLIST = (() => { const by = {}; sown.forEach(f => { (by[f.c] ||= {c:f.c, n:0, ha:0}); by[f.c].n++; by[f.c].ha += f.ha; }); return Object.values(by).sort((a,b) => b.ha - a.ha); })();
 const inCrop = f => !mapState.crop || f.c === mapState.crop;
 function closeSheet(){ document.querySelectorAll(".sheet,.sheetbg").forEach(e => e.remove()); }
@@ -715,7 +751,7 @@ function itemHTML(f){
 function bindItems(root){ root.querySelectorAll("[data-f]").forEach(b => b.onclick = () => go("f-"+b.dataset.f)); }
 
 // --- график сезона ---
-const X0 = Date.parse("2026-05-01"), X1 = Date.parse("2026-10-20");
+const X0 = Date.parse(`${YR}-05-01`), X1 = Date.parse(`${YR}-10-20`);
 function workKind(t){ t = t.toLowerCase();
   if (t.includes("посев") && !t.includes("предпосев")) return ["С","#2f6b3a","сев"];
   if (t.includes("уборочн") || t.includes("обмолот") || t.includes("скашиван") || t.includes("кошение")) return ["У","#8a5a12","уборка"];
@@ -731,9 +767,9 @@ function seasonChart(f, opts={}){
     return `<polyline class="${cls||""}" style="--len:${Math.ceil(len)}" fill="none" stroke="${color}" stroke-width="${w}" ${dash?`stroke-dasharray="${dash}"`:""} stroke-linejoin="round" stroke-linecap="round" points="${p.map(q=>q.join(",")).join(" ")}"/>`; };
   const mp = pts(f.s||[]);
   const area = mp.length>1 ? `<polygon fill="var(--accent)" opacity=".1" points="${mp[0][0]},${y(0)} ${mp.map(q=>q.join(",")).join(" ")} ${mp[mp.length-1][0]},${y(0)}"/>` : "";
-  const months = [5,6,7,8,9,10].map(m => Date.parse(`2026-${String(m).padStart(2,"0")}-01`));
+  const months = [5,6,7,8,9,10].map(m => Date.parse(`${YR}-${String(m).padStart(2,"0")}-01`));
   const mname = ["май","июнь","июль","август","сентябрь","октябрь"];
-  const works = (f.w||[]).map(w => { const [d,m] = w[0].split("."); const ms = Date.parse(`2026-${m}-${d}`); return {ms, w, k: workKind(w[1])}; }).filter(o => o.ms>=X0 && o.ms<=X1);
+  const works = (f.w||[]).map(w => { const [d,m] = w[0].split("."); const ms = Date.parse(`${YR}-${m}-${d}`); return {ms, w, k: workKind(w[1])}; }).filter(o => o.ms>=X0 && o.ms<=X1);
   // раскладка значков работ без наложения
   const lanes = []; works.forEach(o => { const px = x(o.ms); let l = 0; while (lanes[l] != null && px - lanes[l] < 15) l++; lanes[l] = px; o.l = l; });
   const phDates = [...new Set((ptsByField[f.n]||[]).map(p => p.d))];
@@ -775,6 +811,22 @@ function zoneCard(z, withField){
     <div class="btnrow">${withField && z.f!=null ? `<button class="btn pri" data-f="${z.f}">Открыть поле</button>` : ""}<a class="btn" href="https://yandex.ru/maps/?pt=${z.lon},${z.lat}&z=16&l=sat" target="_blank" rel="noopener">Точка на Яндекс Картах</a><span class="btn" style="cursor:text;user-select:all;font-weight:500">${z.lat}, ${z.lon}</span></div>
   </article>`;
 }
+function fieldYears(f){
+  const Y = yearInfo(f.i); if (Y.length < 2) return "";
+  const sp = SPOTS.filter(s => s.f === f.i);
+  const dt = v => v == null ? "" : (v > 0 ? "+" : "") + nf(v, 1);
+  const lines = Y.map((o,k) => ({t: `${o.y}${o.c ? ", " + cap(o.c).toLowerCase() : ""}`, d: o.dates, v: o.s || [], col: ycol(o.y, k), w: o.y === YR ? 3.5 : 2, dash: o.y === YR ? "" : "6 4"}));
+  return `<div class="card stack"><h3>Это поле по годам</h3>
+    <table class="qtab ytab"><thead><tr><th>Год</th><th>Культура</th><th>Июль к соседям</th><th>Урожай, ц/га</th></tr></thead><tbody>
+    ${Y.map(o => { const sc = o.jul == null ? "" : o.jul <= -0.15 ? "bad" : o.jul <= -0.08 ? "warn" : "ok";
+      return `<tr${o.y === YR ? ' class="now"' : ""}><td>${o.y}</td><td>${esc(o.c ? cap(o.c).toLowerCase() : "-")}${o.p ? `<div class="muted" style="font-size:12.5px;font-weight:500">после: ${esc(cap(o.p).toLowerCase())}</div>` : ""}</td>
+      <td>${o.jul == null ? "-" : `<span class="badge ${sc}">${(o.jul > 0 ? "+" : "") + nf(o.jul, 2)}</span>`}</td><td>${o.yl != null ? nf(o.yl, 1) + (o.yk != null ? `<div class="muted" style="font-size:12.5px">${dt(o.yk)} к середине</div>` : "") : "-"}</td></tr>`; }).join("")}</tbody></table>
+    <p class="note">Июль к соседям - насколько зелень поля (индекс NDVI) в июле выше или ниже середины полей той же культуры: минус 0,08 и ниже - присмотреться, минус 0,15 и ниже - заметное отставание.</p>
+    ${yearsChart(lines, 180) ? `<div class="chart">${yearsChart(lines, 180)}</div>` : ""}
+    ${sp.length ? `<p class="caveat" style="margin:0"><b>Постоянное слабое место:</b> ${sp.map(s => `${nf(s.ha,1)} га, слабое в годы: ${esc(s.yrs)}`).join("; ")}. Здесь стоит взять пробы почвы.</p>` : ""}
+    ${Y.find(o => o.y === YR && o.wk) ? (o => `<p class="note">По журналу ${YR}: азот ${o.wk.N != null ? nf(o.wk.N) + " кг/га" : "-"}, дней с гербицидом ${o.wk.h ?? "-"}, с фунгицидом ${o.wk.fu ?? "-"}.</p>`)(Y.find(o => o.y === YR)) : ""}
+  </div>`;
+}
 function viewField(i){
   const f = F[i]; if (!f) return go("today");
   const zs = Z.filter(z => z.f === f.i);
@@ -785,7 +837,7 @@ function viewField(i){
   const npts = (ptsByField[f.n]||[]).reduce((a,p)=>a+p.n,0); const fgs = groupsByField[f.n]||[];
   const peak = f.s ? Math.max(...f.s.filter(v=>v!=null)) : null;
   const say = f.st === "ok" ? "Поле прошло сезон на уровне соседних полей той же культуры. Слабых участков не найдено."
-    : f.st === "none" ? "Поле без посева в 2026 году (пар или культура не указана)." : (f.why || "Отставало от соседних полей.");
+    : f.st === "none" ? `Поле без посева в ${YR} году (пар или культура не указана).` : (f.why || "Отставало от соседних полей.");
   // ok-поле с оговоркой
   const say2 = f.st === "ok" && f.lbl === "оговорка" && f.note ? " Примечание: " + f.note + "." : "";
   app.innerHTML = `<section class="view stack">
@@ -795,6 +847,7 @@ function viewField(i){
     <p class="say">${esc(say + say2)}</p>
     ${f.jc && f.c && f.jc.toUpperCase() !== f.c.toUpperCase() ? `<p class="note">В базе культура "${esc(cap(f.c).toLowerCase())}", по журналу работ - "${esc(cap(f.jc).toLowerCase())}". Для сравнения с соседями взята культура из журнала.</p>` : ""}
     ${rr ? `<div class="card" style="border-left:4px solid var(--accent)"><h3>Разбор и предложения</h3><dl class="prow"><dt>Что было</dt><dd>${esc(rr.что_было)}</dd><dt>Возможная причина</dt><dd>${esc(rr.причина)}</dd><dt>Что можно попробовать</dt><dd><b>${esc(rr.что_делать)}</b></dd></dl><p class="note" style="margin-top:8px">Причина - версия по спутнику, журналу и фото, подтвердить должен агроном.</p></div>` : ""}
+    ${fieldYears(f)}
     <div class="card chart"><h3 style="margin-bottom:8px">Как росло поле</h3>${f.s ? seasonChart(f) : `<p class="muted">Нет снимков по этому полю.</p>`}
       <p class="note" style="margin-top:8px">Линия - сколько зелени на поле по снимкам спутника (индекс NDVI: 0 - голая земля, 0,8 и выше - густой здоровый посев). Пунктир - поля той же культуры с похожей датой сева. Значки внизу - работы из журнала SmartAgro, наведите или нажмите, чтобы увидеть подробности.</p></div>
     <div class="grid2">
@@ -898,7 +951,14 @@ function photoMap(p, f){
   return `<div class="lbmap"><div class="lbms"><svg viewBox="${vb.join(" ")}" role="img" aria-label="Где снято фото">${tiles}${outl}${cam}${sc}</svg><div class="lbmz"><button data-mz="-1" aria-label="Приблизить карту" title="Приблизить карту"${mapLv===0?" disabled":""}>+</button><button data-mz="1" aria-label="Отдалить карту" title="Отдалить карту"${mapLv===MAPR.length-1?" disabled":""}>&minus;</button></div></div>
     <span class="mc"><b>Где снято фото.</b> ${p.dir != null ? "Жёлтый сектор - куда смотрела камера." : "Направление камеры не записано."} Обведены поля по цвету светофора${f ? `, ярче - ${esc(f.n)}` : ""}. Кнопки + и &minus; на карте - приблизить или отдалить. Снимок со спутника подгружается из интернета.</span></div>`;
 }
+function noPast(what){
+  app.innerHTML = `<section class="view"><div class="card stack" style="margin-top:20px"><h2>${what} есть только за ${CUR} год</h2>
+    <p class="note">За ${YR} год есть снимки спутника${YR >= 2025 ? ", журнал работ и урожайность" : " и севооборот"}. Их разбор - на вкладках "Сегодня", "Карта" и "Отчёт".</p>
+    <div class="btnrow"><button class="btn pri" id="tocur">Перейти к ${CUR} году</button></div></div></section>`;
+  $("#tocur").onclick = () => tkSetYear(CUR);
+}
 function viewSeason(){
+  if (!Z.length) return noPast("Слабые участки внутри полей");
   const byP = {}; Z.forEach(z => { const o = byP[z.p] ||= {n:0,ha:0}; o.n++; o.ha += z.ha; });
   const maxHa = Math.max(...Object.values(byP).map(o=>o.ha));
   const proofs = [["g01","Спутник и дрон совпали"],["g02","Дрон подтвердил редкий посев"],["g03","Где спутник не помогает"]].map(([id,t]) => { const gi = GR.findIndex(g => g.t.startsWith({g01:"Кошары",g02:"Поле 67",g03:"Горбатое"}[id])); return {gi, t}; }).filter(o => o.gi >= 0);
@@ -945,6 +1005,7 @@ function viewCrops(){
 }
 let photoFilter = "all";
 function viewPhotos(){
+  if (!M.pts.length) return noPast("Фото дрона");
   const dates = [...new Set(M.pts.map(p=>p.d))].sort();
   const fieldsShot = [...new Set(M.pts.map(p=>p.f).filter(Boolean))];
   const nph = M.pts.reduce((a,p)=>a+p.n,0);
@@ -973,26 +1034,26 @@ function viewRec(){
   const bd = RT.больше_данных || {};
   app.innerHTML = `<section class="view">
     ${storyBlock()}
-    <div class="sec" style="margin-top:28px"><h2 style="font-family:var(--display);font-size:24px">Подробно: выводы сезона 2026 и предложения на 2027</h2>
+    <div class="sec" style="margin-top:28px"><h2 style="font-family:var(--display);font-size:24px">Подробно: выводы сезона ${YR}${PAST ? " (задним числом)" : ` и предложения на ${NX}`}</h2>
       ${RT.оговорка ? `<p class="caveat" style="margin:4px 0 14px">${esc(RT.оговорка)}</p>` : ""}
       ${RT.главное ? `<p class="lead" style="margin-top:0">${esc(RT.главное)}</p>` : ""}
       <div class="tiles reveal" style="margin-top:14px">
         <div class="tile bad"><b data-n="${lag.length}">0</b><span>${pl(lag.length,"поле отставало","поля отставали","полей отставали")} от соседей, ${ha(lag)} га</span></div>
-        <div class="tile ask"><b data-n="${rp.length}">0</b><span>${pl(rp.length,"поле рапса переведено","поля рапса переведены","полей рапса переведены")} в пар, ${ha(rp)} га</span></div>
-        <div class="tile zone"><b data-n="${Z.length}">0</b><span>${pl(Z.length,"слабое пятно","слабых пятна","слабых пятен")} внутри полей, ${nf(zoneHa)} га</span></div>
-        <div class="tile warn"><b data-n="${REC.q.length || (RT.вопросы||[]).length}">0</b><span>${wd(REC.q.length || (RT.вопросы||[]).length,"вопрос")} агроному</span></div>
+        ${rp.length ? `<div class="tile ask"><b data-n="${rp.length}">0</b><span>${pl(rp.length,"поле рапса переведено","поля рапса переведены","полей рапса переведены")} в пар, ${ha(rp)} га</span></div>` : ""}
+        ${Z.length ? `<div class="tile zone"><b data-n="${Z.length}">0</b><span>${pl(Z.length,"слабое пятно","слабых пятна","слабых пятен")} внутри полей, ${nf(zoneHa)} га</span></div>` : ""}
+        ${(REC.q.length || (RT.вопросы||[]).length) ? `<div class="tile warn"><b data-n="${REC.q.length || (RT.вопросы||[]).length}">0</b><span>${wd(REC.q.length || (RT.вопросы||[]).length,"вопрос")} агроному</span></div>` : ""}
       </div></div>
     ${(RT.выводы||[]).length ? `<div class="sec"><h2>Главное о сезоне</h2><ul class="rlist">${RT.выводы.map(([t,x])=>`<li><b>${esc(t)}</b>${esc(x)}</li>`).join("")}</ul></div>` : ""}
     ${cmpBlock()}
-    ${lag.length ? `<div class="sec"><h2>Поля, которые отставали от соседей</h2><p class="note">Июль, сравнение с полями той же культуры и с похожим сроком сева. Культура и дата сева взяты из журнала работ.</p><div class="list">${lag.map(itemHTML).join("")}</div></div>` : ""}
+    ${lag.length ? `<div class="sec"><h2>Поля, которые отставали от соседей</h2><p class="note">${PAST ? "Июль, сравнение с полями той же культуры. Культура - по севообороту SmartAgro." : "Июль, сравнение с полями той же культуры и с похожим сроком сева. Культура и дата сева взяты из журнала работ."}</p><div class="list">${lag.map(itemHTML).join("")}</div></div>` : ""}
     ${rp.length ? `<div class="sec"><h2>Рапс, переведённый в пар</h2><p class="note">В базе пар, по журналу рапс посеян 17-24 мая и задискован 4-18 июля. На снимках изменения видны в те же дни. Уточняем у агронома.</p><div class="btnrow">${rp.map(f=>fbtn(f.n)).join("")}</div></div>` : ""}
     ${REC.rows.length ? `<div class="sec"><h2>По полям: возможные причины и что можно попробовать</h2><p class="note">Это предположения по имеющимся данным. Подтвердить или опровергнуть их могут агроном и команда хозяйства.</p>
       <div class="rgrid">${REC.rows.map(r=>`<div class="card"><h3>${esc((r.поля||[]).slice(0,4).join(", "))}${(r.поля||[]).length>4?` и ещё ${(r.поля||[]).length-4}`:""}</h3><span class="note">${esc(r.культура||"")}</span><dl class="prow"><dt>Что было</dt><dd>${esc(r.что_было)}</dd><dt>Возможная причина</dt><dd>${esc(r.причина)}</dd><dt>Что можно попробовать</dt><dd><b>${esc(r.что_делать)}</b></dd></dl><div class="btnrow" style="margin-top:10px">${(r.поля||[]).filter(byN).slice(0,6).map(fbtn).join("")}</div></div>`).join("")}</div></div>` : ""}
-    ${(RT.на_2027||[]).length ? `<div class="sec"><h2>Что можно рассмотреть на 2027</h2><p class="note">По изученным данным можно предложить следующее. Это варианты для обсуждения с агрономом, а не готовые решения.</p><div class="rgrid">${RT.на_2027.map(([t,xs])=>`<div class="card"><h3>${esc(t)}</h3><ul>${xs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div></div>` : ""}
+    ${NEXT.length ? `<div class="sec"><h2>${PAST ? `Что можно было сделать иначе и что взять в ${NX}` : `Что можно рассмотреть на ${NX}`}</h2><p class="note">По изученным данным можно предложить следующее. Это варианты для обсуждения с агрономом, а не готовые решения.</p><div class="rgrid">${NEXT.map(([t,xs])=>`<div class="card"><h3>${esc(t)}</h3><ul>${xs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div></div>` : ""}
     ${bd.пункты ? `<div class="sec"><h2>Больше данных - точнее рекомендации</h2><p class="lead" style="margin-top:0;font-size:16px">${esc(bd.текст)}</p><ul class="rlist">${bd.пункты.map(([t,x])=>`<li><b>${esc(t)}</b>${esc(x)}</li>`).join("")}</ul></div>` : ""}
     ${(RT.расхождения||[]).length ? `<div class="sec"><h2>Почему возможны расхождения с тем, что было на поле</h2><div class="rgrid">${RT.расхождения.map(([t,x])=>`<div class="card"><h3>${esc(t)}</h3><p class="note">${esc(x)}</p></div>`).join("")}</div></div>` : ""}
     ${qaBlock()}
-    <p class="note">Выводы составлены по снимкам Sentinel-2, журналу работ SmartAgro и фото дрона${REC.upd?`, обновлено ${esc(REC.upd)}`:""}.</p>
+    <p class="note">${PAST ? `Разбор ${YR} года составлен задним числом по снимкам Sentinel-2${YR >= 2025 ? ", журналу работ и урожайности SmartAgro" : " и севообороту SmartAgro"}.` : ""}${PAST ? "" : `Выводы составлены по снимкам Sentinel-2, журналу работ SmartAgro и фото дрона${REC.upd?`, обновлено ${esc(REC.upd)}`:""}.`}</p>
   </section>`;
   app.querySelectorAll(".tile b").forEach(b => countUp(b, +b.dataset.n));
   bindItems(app); bindQA(app); bindStory(app);
@@ -1028,7 +1089,7 @@ function openFieldSheet(i){
   sh.addEventListener("touchend", e => { if (y0 != null && e.changedTouches[0].clientY - y0 > 90) close(); y0 = null; }, {passive:true});
 }
 // ---------- сверка сезона с 2024 и 2025 годами (текст по итогам сравнения лет) ----------
-const CMP = window.DASH.cmp || (window.DASH.year === 2026 ? {
+const CMP = window.DASH.cmp || (!PAST && YR === 2026 ? {
   intro: "Разработчик добавил в разбор данные АгроАналитики (SmartAgro) за 2024-2025 годы: севооборот, журнал работ, урожайность, а также снимки спутника за эти годы. В связи с этим выводы 2026 года сверены с прошлыми сезонами: часть подтвердилась, часть поправлена. Итог предварительный, его нужно сверить с агрономом.",
   agree: [
     ["Поля 123+, 123+ часть 2 и 43", "отставали и по снимкам, и по урожаю (на 5-12 ц/га ниже середины культуры). Вывод по ним стал надёжнее."],
@@ -1066,7 +1127,10 @@ function storyBlock(){
   const Y = window.DASH.year || "", bad = tot("bad"), haOf = a => a.reduce((s,f)=>s+f.ha,0);
   const byP = {}; Z.forEach(z => { const k = z.p; (byP[k] ||= {p:k, ha:0, n:0}); byP[k].ha += z.ha; byP[k].n++; });
   const ps = Object.values(byP).sort((a,b) => b.ha - a.ha), mx = ps.length ? ps[0].ha : 1;
-  const plan = (RT.на_2027 || []).map(x => Array.isArray(x[1]) ? [x[0], x[1][0]] : x).slice(0, 4);
+  // прошлые годы: где отставали - по культурам (площадь полей "проблема" и "присмотреться")
+  const byC = {}; F.forEach(f => { if (f.st === "bad" || f.st === "warn") { (byC[f.c] ||= {c:f.c, ha:0, n:0}); byC[f.c].ha += f.ha; byC[f.c].n++; } });
+  const cs = Object.values(byC).sort((a,b) => b.ha - a.ha), cmx = cs.length ? cs[0].ha : 1;
+  const plan = NEXT.map(x => Array.isArray(x[1]) ? [x[0], x[1][0]] : x).slice(0, 4);
   const step = (n, t) => `<span class="sstep">Шаг ${n} из 4 · ${t}</span>`;
   return `<div class="story">
     <section class="shero">${step(1, "Итог")}
@@ -1074,18 +1138,21 @@ function storyBlock(){
       <p>${esc(RT.главное || `Слабые места нашлись на ${nf(zoneHa)} га, это ${nf(zoneHa/sownHa*100,1)}% посевов.`)}</p>
       <div class="tiles" style="grid-template-columns:repeat(2,minmax(0,1fr))">
         <div class="tile bad"><b data-n="${bad.length}">0</b><span>${pl(bad.length,"поле с проблемой","поля с проблемой","полей с проблемой")}, ${nf(haOf(bad))} га</span></div>
-        <div class="tile zone"><b data-n="${Math.round(zoneHa)}">0</b><span>га слабых мест внутри полей (${Z.length} ${wd(Z.length,"участок")})</span></div>
+        ${Z.length ? `<div class="tile zone"><b data-n="${Math.round(zoneHa)}">0</b><span>га слабых мест внутри полей (${Z.length} ${wd(Z.length,"участок")})</span></div>`
+          : `<div class="tile warn"><b data-n="${tot("warn").length}">0</b><span>присмотреться, ${nf(haOf(tot("warn")))} га</span></div>`}
       </div></section>
     <section class="spart">${step(2, "Где теряли")}
-      <h2>Какие слабые места были чаще всего</h2>
+      ${!ps.length ? `<h2>Где отставали сильнее: по культурам</h2>
+      <div class="sbars">${cs.map(o => `<div class="lbar"><div class="sbl"><span>${esc(cap(o.c))}, ${o.n} ${wd(o.n,"поле")}</span><b>${nf(o.ha)} га</b></div><div class="sbt"><i style="width:${(o.ha/cmx*100).toFixed(1)}%;background:var(--warn)"></i></div></div>`).join("")}</div>
+      <p class="note">Площадь полей, которые в июле отставали от полей той же культуры.</p></section>` : `<h2>Какие слабые места были чаще всего</h2>
       <div class="sbars">${ps.map(o => `<div class="lbar"><div class="sbl"><span>${esc(PAT[o.p][1])}</span><b>${nf(o.ha)} га</b></div><div class="sbt"><i style="width:${(o.ha/mx*100).toFixed(1)}%;background:var(--${PAT[o.p][0]})"></i></div></div>`).join("")}</div>
-      <p class="note">Площадь слабых участков внутри полей по виду. Причины - предположения, их подтверждает агроном.</p></section>
+      <p class="note">Площадь слабых участков внутри полей по виду. Причины - предположения, их подтверждает агроном.</p></section>`}
     ${CMP ? `<section class="spart">${step(3, "Что подтвердилось")}
       <h2>Сверка с прошлыми годами</h2>
       <ul class="clist">${CMP.agree.map(([t]) => `<li>${esc(t)}</li>`).join("")}</ul>
       <div class="btnrow"><button class="btn" data-jump="cmp">Подробнее о сверке</button></div></section>` : ""}
     ${plan.length ? `<section class="spart">${step(4, "План")}
-      <h2>Что обсудить с командой на ${+Y + 1 || ""}</h2>
+      <h2>${PAST ? `Что из ${Y} года взять в ${NX}` : `Что обсудить с командой на ${NX}`}</h2>
       <ol class="splan">${plan.map(([t,x]) => `<li><b>${esc(t)}.</b> ${esc(x)}</li>`).join("")}</ol>
       <div class="btnrow noprint"><button class="btn pri" id="pdf">Скачать отчёт PDF</button><button class="btn" data-go="main">Показать на карте</button></div></section>` : ""}
   </div>`;
@@ -1121,6 +1188,7 @@ function qaList(){
 function qaLoad(){ try { return JSON.parse(localStorage.getItem(QA_KEY) || "{}"); } catch (e) { return {}; } }
 function qaSave(o){ try { localStorage.setItem(QA_KEY, JSON.stringify(o)); } catch (e) {} }
 function qaBlock(){
+  if (PAST) return "";
   const L = qaList(); if (!L.length) return "";
   const A = qaLoad(); let g0 = "";
   return `<div class="sec" id="qa"><h2>Вопросы агроному</h2>
@@ -1164,7 +1232,8 @@ const ACT = {
   p4: ["В июле облетать такие места дроном первыми и решать с защитой по фото.", "Посмотреть фото и поле в июле: болезнь, вредители, полегание, засуха на лёгкой почве."],
   p5: ["Обычно ничего делать не нужно.", "Убедиться, что это бугор или лёгкая почва."]
 };
-const LAG = ["Решение по подкормке или защите - после осмотра, вместе с агрономом.", "Осмотреть поле целиком и соседнее поле той же культуры: густота, сорняки, болезни."];
+const LAG = PAST ? ["В похожий сезон осматривать такие поля в июле и решать с подкормкой или защитой вместе с агрономом.", "Сравнить с соседними полями той же культуры: сроки сева, предшественник, обработки по журналу."]
+  : ["Решение по подкормке или защите - после осмотра, вместе с агрономом.", "Осмотреть поле целиком и соседнее поле той же культуры: густота, сорняки, болезни."];
 // поиск поля в тексте вопроса агроному: "Поле 56", "47", "Горбатое" и т.п.
 const fKey = n => { const w = String(n).toLowerCase().replace(/№\s*/g, "").split(/\s+/); return w[0] === "поле" && w[1] ? w[1] : w[0]; };
 const qFor = f => { const k = fKey(f.n).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); const re = new RegExp(`(^|[^\\wа-яё/-])${k}(?![\\wа-яё/-])`, "i");
@@ -1178,7 +1247,7 @@ function advice(f){
     ? `Слабый участок ${nf(z.ha,1)} га${zs.length > 1 ? ` (всего ${zs.length} ${wd(zs.length,"участок")}, ${nf(f.zh,1)} га)` : ""}: ${PAT[z.p][1].toLowerCase()}.${z.j ? (/^по журналу/i.test(z.j) ? " " : " По журналу: ") + z.j : ""}`
     : (f.why || "Отставало от соседних полей той же культуры.");
   const doIt = rr ? rr.что_делать.charAt(0).toUpperCase() + rr.что_делать.slice(1) + "." : (code ? ACT[code][0] : LAG[0]);
-  const check = (code ? ACT[code][1] : LAG[1]) + (phs.length ? "" : " Фото дрона по полю нет - облететь участок.");
+  const check = (code ? ACT[code][1] : LAG[1]) + (phs.length || PAST ? "" : " Фото дрона по полю нет - облететь участок.");
   return {z, look, doIt, check, qs, ph: phs[0], fg: fgs[0]};
 }
 function decisionCard(f, open){
@@ -1198,20 +1267,28 @@ function decisionCard(f, open){
     <div class="btnrow"><button class="btn pri" data-f="${f.i}">Карточка поля</button></div>
   </article>`;
 }
-function farmLine(){ // средняя зелень хозяйства по датам, с весом по площади
-  return DATES.map((d,k) => { let s = 0, h = 0; sown.forEach(f => { const v = f.s && f.s[k]; if (v != null) { s += v*f.ha; h += f.ha; } }); return h > sown.reduce((a,f)=>a+f.ha,0)*.25 ? s/h : null; });
+const ycol = (y, k) => +y === CUR ? "var(--accent)" : ["#a3a89e", "#d9a85a", "#c49be0"][k % 3];
+function farmLine(fs, dates){ // средняя зелень хозяйства по датам, с весом по площади
+  const tot = fs.filter(f => f.c).reduce((a,f) => a + f.ha, 0);
+  return dates.map((d,k) => { let s = 0, h = 0; fs.forEach(f => { const v = f.s && f.s[k]; if (f.c && v != null) { s += v*f.ha; h += f.ha; } }); return h > tot*.25 ? s/h : null; });
+}
+// линии по годам на общей оси "май - октябрь" (по дню года)
+function yearsChart(lines, H0){
+  const W = 640, H = H0 || 200, L = 34, R = 10, T = 12, B = 28;
+  const doy = d => { const t = new Date(d + "T00:00:00Z"); return (t - Date.UTC(t.getUTCFullYear(), 0, 1)) / 864e5; };
+  const a = doy("2001-05-01"), b = doy("2001-10-20"), x = v => L + (v-a)/(b-a)*(W-L-R), y = v => T + (1-v/.9)*(H-T-B);
+  const mn = ["май","июнь","июль","август","сентябрь","октябрь"], ms = [5,6,7,8,9,10].map(m => doy(`2001-${String(m).padStart(2,"0")}-01`));
+  const ok = lines.filter(l => l.v.filter(v => v != null).length >= 2); if (!ok.length) return "";
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Зелень по годам">
+    ${[0,.2,.4,.6,.8].map(v=>`<line class="ax" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="lbl" x="${L-6}" y="${y(v)+3}" text-anchor="end">${v.toFixed(1).replace(".",",")}</text>`).join("")}
+    ${ms.map((m,i)=>`<text class="lbl" x="${x(m)+4}" y="${H-B+16}">${mn[i]}</text>`).join("")}
+    ${ok.map(l => `<polyline fill="none" stroke="${l.col}" stroke-width="${l.w || 2.5}" ${l.dash ? `stroke-dasharray="${l.dash}"` : ""} stroke-linejoin="round" points="${l.v.map((v,k) => v == null ? null : `${x(doy(l.d[k])).toFixed(1)},${y(v).toFixed(1)}`).filter(Boolean).join(" ")}"/>`).join("")}
+  </svg><div class="key">${ok.map(l => `<span><i style="background:${l.col}"></i>${esc(l.t)}</span>`).join("")}</div>`;
 }
 function yearChart(){
-  const W = 640, H = 200, L = 34, R = 10, T = 12, B = 28;
-  const x = ms => L + (ms-X0)/(X1-X0)*(W-L-R), y = v => T + (1-v/.9)*(H-T-B);
-  const p = farmLine().map((v,k) => v == null ? null : [x(Date.parse(DATES[k])), y(v)]).filter(Boolean);
-  if (p.length < 2) return "";
-  const months = [5,6,7,8,9,10].map(m => Date.parse(`2026-${String(m).padStart(2,"0")}-01`)), mn = ["май","июнь","июль","август","сентябрь","октябрь"];
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Средняя зелень посевов хозяйства по снимкам 2026 года">
-    ${[0,.2,.4,.6,.8].map(v=>`<line class="ax" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="lbl" x="${L-6}" y="${y(v)+3}" text-anchor="end">${v.toFixed(1).replace(".",",")}</text>`).join("")}
-    ${months.map((ms,i)=>`<text class="lbl" x="${x(ms)+4}" y="${H-B+16}">${mn[i]}</text>`).join("")}
-    <polyline fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-dasharray="6 4" stroke-linejoin="round" points="${p.map(q=>q.join(",")).join(" ")}"/>
-  </svg><div class="key"><span><i style="background:var(--muted)"></i>2026, в среднем по засеянным полям</span><span><i style="background:var(--accent)"></i>2027 - появится с первыми снимками</span></div>`;
+  const lines = YEARS.map((y,k) => { const cur = y === String(CUR); const B = cur ? BASE : tkYearView(BASE, y);
+    return {t: y, d: B.core.dates, v: farmLine(B.core.fields, B.core.dates), col: ycol(y, k), w: +y === YR ? 3.5 : 2, dash: +y === YR ? "" : "6 4"}; });
+  return yearsChart(lines);
 }
 function viewToday(){
   const bad = tot("bad"), warn = tot("warn"), ok = tot("ok"), haOf = a => a.reduce((s,f)=>s+f.ha,0);
@@ -1231,24 +1308,24 @@ function viewToday(){
   app.innerHTML = `<section class="view">
     <div class="hello"><span class="muted">${today}</span><h2 class="hi">${hello}</h2></div>
     <div class="card todaybox">
-      <h3>Хозяйство ${over ? "по итогам сезона" : "сегодня"}</h3>
+      <h3>${PAST ? `Сезон ${YR}, задним числом` : `Хозяйство ${over ? "по итогам сезона" : "сегодня"}`}</h3>
       <div class="tiles t3 reveal">
         <button class="tile ok" data-go="main"><b data-n="${ok.length}">0</b><span>в норме, ${nf(haOf(ok))} га</span></button>
         <button class="tile warn" data-go="main"><b data-n="${warn.length}">0</b><span>присмотреться, ${nf(haOf(warn))} га</span></button>
         <button class="tile bad" data-go="main"><b data-n="${bad.length}">0</b><span>проблема, ${nf(haOf(bad))} га</span></button>
       </div>
-      <p class="note" style="max-width:none">Последний снимок спутника: ${fmtD(last)}, видно ${seen} из ${sown.length} ${pl(sown.length,"поля","полей","полей")}.${lastFly ? ` Последний облёт дрона: ${fmtD(lastFly)}.` : ""}${over ? " Сезон закончен: ниже - что проверить и решить до весны." : ""}</p>
+      <p class="note" style="max-width:none">Последний снимок спутника: ${fmtD(last)}, видно ${seen} из ${sown.length} ${pl(sown.length,"поля","полей","полей")}.${lastFly ? ` Последний облёт дрона: ${fmtD(lastFly)}.` : ""}${PAST ? "" : over ? " Сезон закончен: ниже - что проверить и решить до весны." : ""}</p>
     </div>
 
     <div class="sec">
-      <div class="shead"><h2>Что решить ${over ? "до сезона 2027" : "сегодня"}</h2><span class="muted" style="font-size:13px">${attn.length} ${wd(attn.length,"поле")}</span></div>
-      <p class="note">Это предположения по снимкам, журналу работ и фото дрона. Решение принимается после осмотра поля и разговора с агрономом.</p>
+      <div class="shead"><h2>${PAST ? `Что было не так в ${YR} году` : `Что решить ${over ? `до сезона ${NX}` : "сегодня"}`}</h2><span class="muted" style="font-size:13px">${attn.length} ${wd(attn.length,"поле")}</span></div>
+      <p class="note">${PAST ? `Это разбор задним числом: где поля отставали от соседей той же культуры и что можно было проверить. Причины - предположения, их подтверждает агроном.` : "Это предположения по снимкам, журналу работ и фото дрона. Решение принимается после осмотра поля и разговора с агрономом."}</p>
       <div class="stack" id="dlist">${attn.slice(0,3).map((f,k) => decisionCard(f, k === 0)).join("")}</div>
       ${attn.length > 3 ? `<button class="more" id="dmore">Ещё ${attn.length-3} ${wd(attn.length-3,"поле")} с проблемой</button>` : ""}
     </div>
 
-    <div class="sec">
-      <h2>Подготовка к сезону 2027</h2>
+    ${PAST ? "" : `<div class="sec">
+      <h2>Подготовка к сезону ${NX}</h2>
       <div class="card stack prep">
         ${P27 ? `<p>Севооборот 2027 загружен. Рядом с полем показана культура, которая там будет.</p>`
               : `<p class="caveat" style="margin:0"><b>Нужен севооборот 2027 от агронома</b> - таблица "поле - культура 2027". Тогда здесь будет видно, где новая культура попадает на прошлогодние слабые места, и что проверить до сева.</p>`}
@@ -1257,9 +1334,9 @@ function viewToday(){
         ${late.length ? `<div><b>Поздние всходы, сев в несколько заходов</b> - ${late.length} ${wd(late.length,"поле")}<p class="note">Планировать сев поля за один заход; если не выходит - записывать в журнал, какую часть сеяли позже.</p><div class="btnrow">${chips(late.slice(0,8))}</div></div>` : ""}
         ${qn ? `<div><b>Вопросы агроному: ${qn}</b><p class="note">Ответы уточнят выводы и правила, по которым дашборд находит проблемы.</p><div class="btnrow"><button class="btn" data-go="rec-q">Ответить на вопросы</button></div></div>` : ""}
       </div>
-    </div>
+    </div>`}
 
-    ${yearChart() ? `<div class="sec"><h2>2027 против 2026</h2><div class="card chart">${yearChart()}<p class="note" style="margin-top:8px">Средняя зелень по засеянным полям хозяйства. Когда придут снимки 2027 года, рядом встанет новая линия, и будет видно, идёт сезон лучше или хуже прошлого.</p></div></div>` : ""}
+    ${yearChart() ? `<div class="sec"><h2>Сезоны по годам</h2><div class="card chart">${yearChart()}<p class="note" style="margin-top:8px">Средняя зелень по засеянным полям хозяйства по снимкам спутника. Когда придут снимки ${NX} года, рядом встанет новая линия, и будет видно, идёт сезон лучше или хуже прошлых.</p></div></div>` : ""}
   </section>`;
   app.querySelectorAll(".tile b").forEach(b => countUp(b, +b.dataset.n));
   const bind = r => { bindItems(r); bindPhotos(r); r.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go)); };
@@ -1285,7 +1362,8 @@ function route(){
   window.scrollTo({top:0, behavior: reduce ? "auto" : "smooth"});
 }
 document.querySelectorAll('nav.tabs [role="tab"]').forEach(b => b.onclick = () => go(b.dataset.tab));
-addEventListener("hashchange", route);
+window.__tkRoute = route;
+if (!window.__tkHash) { window.__tkHash = 1; addEventListener("hashchange", () => window.__tkRoute()); }
 route();
 }
 BOOT();
