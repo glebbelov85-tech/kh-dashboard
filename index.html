@@ -147,6 +147,65 @@ body.mapfs nav.tabs{display:none}
 .item .ha{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;white-space:nowrap}
 .bad>.stripe{background:var(--bad)}.warn>.stripe{background:var(--warn)}.ok>.stripe{background:var(--ok)}.none>.stripe{background:var(--none)}
 .more{border:1px dashed var(--line);background:none;color:var(--accent);font:inherit;font-weight:700;border-radius:10px;padding:10px;cursor:pointer}
+/* вкладка "Сегодня" */
+.hello{margin-top:16px;display:flex;flex-direction:column;gap:2px}
+.hello .hi{font-family:var(--display);font-size:26px}
+.todaybox{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.tiles.t3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tiles.t3 .tile{background:var(--soft);cursor:pointer;padding:10px}
+.tiles.t3 .tile b{font-size:26px}
+.shead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.dcard{background:var(--card);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--line)}
+.dcard.bad{border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}
+.dtop{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dcard .dt{font-size:17px;font-weight:800;color:var(--fg);letter-spacing:0;text-transform:none}
+.dact summary{cursor:pointer;font-weight:700;color:var(--accent);font-size:14px;padding:4px 0;list-style-position:inside}
+.drows{display:grid;grid-template-columns:1fr;gap:10px;margin-top:6px}
+.drows:has(.dthumb){grid-template-columns:84px minmax(0,1fr)}
+.dthumb{padding:0;border:0;background:var(--soft);border-radius:8px;overflow:hidden;width:84px;height:64px;cursor:pointer}
+.dthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.drows dl{margin:0;display:grid;grid-template-columns:1fr;gap:2px}
+.drows dt{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.drows dt:first-child{margin-top:0}
+.drows dd{margin:0;font-size:14px;line-height:1.45}
+@media(max-width:480px){.drows:has(.dthumb){grid-template-columns:1fr}.dthumb{width:100%;height:140px}}
+.prep>div{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--line)}
+.prep>div .btnrow{display:flex;flex-wrap:wrap;gap:6px}
+.clist{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:14.5px;line-height:1.45}
+.fsheet{max-height:60vh;max-height:60dvh}
+.fsheet .grab{display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 8px}
+.fsheet .chart svg{width:100%;height:auto}
+.fsheet .photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+/* отчёт по шагам */
+.story{display:flex;flex-direction:column;gap:14px;margin-top:16px}
+.shero{background:var(--ok-bg);border-radius:16px;padding:20px 16px;display:flex;flex-direction:column;gap:12px}
+.shero .tile{background:var(--card)}
+.stitle{font-family:var(--display);font-size:26px;line-height:1.2}
+.sstep{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.spart{background:var(--card);border-radius:16px;padding:18px 16px;display:flex;flex-direction:column;gap:10px}
+.sbars{display:flex;flex-direction:column;gap:10px}
+.lbar .sbl{display:flex;justify-content:space-between;gap:10px;font-size:14.5px}
+.lbar .sbt{height:10px;border-radius:5px;background:var(--soft);margin-top:4px;overflow:hidden}
+.lbar .sbt i{display:block;height:100%;border-radius:5px}
+.splan{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;line-height:1.45}
+@media print{
+  :root,:root[data-theme="dark"]{--bg:#fff;--card:#fff;--fg:#1f2a22;--muted:#5d6b60;--line:#d6ddd0;--soft:#eef1ea;--accent:#2f6b3a;--ok-bg:#e3f0e3;--warn-bg:#f8efd6;--bad-bg:#f6dedb;--ok:#4f9a55;--warn:#d29a1f;--bad:#c7483c;color-scheme:light;background:#fff}
+  nav.tabs,.themebtn,.noprint,.qsend,.lightbox,.tag,body::before{display:none!important}
+  .wrap{padding-bottom:0}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .card,.tile,.spart,.shero,.qai{break-inside:avoid;border:1px solid #d6ddd0}
+  section.view,.reveal>*{animation:none!important}
+  .qta{border:1px solid #bbb;min-height:2.5em}
+}
+/* вопросы агроному */
+.qag{margin-top:10px}
+.qai{display:flex;flex-direction:column;gap:8px}
+.qq{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start}
+.qn{width:28px;height:28px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:800;font-size:13px}
+.qta,.qin{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);resize:vertical}
+.qta:focus,.qin:focus{outline:2px solid var(--accent);outline-offset:1px}
+.qdone{background:var(--ok-bg);border-radius:10px;padding:8px 12px;font-size:14px}
+.qsend{display:flex;flex-direction:column;gap:8px;border:1px solid var(--accent)}
 .help{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
 .help b{color:var(--fg)}
 /* навигация */
@@ -313,11 +372,12 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 </div>
 
 <nav class="tabs" role="tablist" aria-label="Разделы">
-  <button role="tab" data-tab="main" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Главное</button>
+  <button role="tab" data-tab="today" aria-selected="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>Сегодня</button>
+  <button role="tab" data-tab="main" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Карта</button>
   <button role="tab" data-tab="season" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M4 15l4-5 4 3 4-6 4 4"/></svg>Разбор сезона</button>
   <button role="tab" data-tab="crops" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 21V9"/><path d="M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zM12 10c0-3 2-5 5-5 0 3-2 5-5 5zM12 17c-3 0-5-2-5-5 3 0 5 2 5 5zM12 15c0-3 2-5 5-5 0 3-2 5-5 5z"/></svg>Культуры</button>
   <button role="tab" data-tab="photos" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><circle cx="12" cy="12.5" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>Фото дрона</button>
-  <button role="tab" data-tab="rec" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.8.8 1.3 1.7 1.5 2.5h5c.2-.8.7-1.7 1.5-2.5A6 6 0 0 0 12 3z"/></svg>Выводы</button>
+  <button role="tab" data-tab="rec" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.8.8 1.3 1.7 1.5 2.5h5c.2-.8.7-1.7 1.5-2.5A6 6 0 0 0 12 3z"/></svg>Отчёт</button>
 </nav>
 <div id="lb" class="lightbox" hidden></div>
 
@@ -494,7 +554,7 @@ function farmMap(host, opts={}){
       p.classList.toggle("dim", (!!mapState.crop && f.c !== mapState.crop) || (!!mapState.attn && !att));
       p.classList.toggle("hot", !!mapState.fs && !!mapState.attn && f.st === "bad" && inCrop(f));
       p.classList.toggle("hotw", !!mapState.fs && !!mapState.attn && f.st === "warn" && inCrop(f));
-      p.classList.toggle("sel", !!mapState.fs && mapState.pick === f.i);
+      p.classList.toggle("sel", mapState.pick === f.i);
     });
     $(".zones", svg).style.display = mode === "state" ? "" : "none";
     const g = $(".pts", svg);
@@ -547,7 +607,7 @@ function viewMain(){
       </div>
     </div></section>`;
   app.querySelectorAll(".tile b").forEach(b => countUp(b, +b.dataset.n));
-  MAP = farmMap($("#mapHost"), {onPick: i => mapState.fs ? fsPick(i) : go("f-"+i), start: qbox(CENTERS,.1,.9)});
+  MAP = farmMap($("#mapHost"), {onPick: i => mapState.fs ? fsPick(i) : openFieldSheet(i), start: qbox(CENTERS,.1,.9)});
   const setMode = m => { mapState.mode = m; stop(); app.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.m===m)); MAP.paint(m, mapState.di); drawLegend(); drawPlayer(); drawFs(); };
   mapState.setMode = setMode;
   $("#mapfs").onclick = () => setMapFs(!mapState.fs);
@@ -716,7 +776,7 @@ function zoneCard(z, withField){
   </article>`;
 }
 function viewField(i){
-  const f = F[i]; if (!f) return go("main");
+  const f = F[i]; if (!f) return go("today");
   const zs = Z.filter(z => z.f === f.i);
   const sow = (f.w||[]).filter(w => workKind(w[1])[0]==="С").map(w=>w[0]);
   const sowTxt = sow.length > 1 ? `сев с ${sow[0]} по ${sow[sow.length-1]}` : sow.length ? `сев ${sow[0]}` : (f.sow ? `сев ${shortD(f.sow)}` : "");
@@ -744,7 +804,7 @@ function viewField(i){
     ${zs.length ? `<h2 style="margin-top:6px">Слабые участки (${zs.length})</h2><div class="zgrid">${zs.map(z=>zoneCard(z,false)).join("")}</div>` : ""}
     <div class="card"><h3 style="margin-bottom:6px">Что делали на поле</h3>${(f.w||[]).length ? `<ul class="journal">${f.w.map(w=>{const k=workKind(w[1]);return `<li><time>${w[0]}</time><span class="mk" style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;background:${k[1]};color:#fff;font-size:10px;font-weight:800">${k[0]}</span><span>${esc(w[1].charAt(0).toUpperCase()+w[1].slice(1))}</span><span class="ha">${esc(w[2])} га</span>${whoHTML(w[3])}</li>`}).join("")}</ul><p class="note" style="margin-top:6px">Из журнала гектарных работ SmartAgro за 2026 год. Под работой - кто её делал.</p>` : `<p class="note">Записей в журнале работ нет.</p>`}</div>
   </section>`;
-  $("#back").onclick = () => history.length > 1 ? history.back() : go("main");
+  $("#back").onclick = () => history.length > 1 ? history.back() : go("today");
   bindPhotos(app); bindItems(app); bindWho(app);
 }
 // механизаторы под работой: три фамилии, остальные по кнопке "и ещё N"
@@ -912,7 +972,8 @@ function viewRec(){
   const ha = a => nf(a.reduce((s,f)=>s+f.ha,0));
   const bd = RT.больше_данных || {};
   app.innerHTML = `<section class="view">
-    <div class="sec" style="margin-top:16px"><h2 style="font-family:var(--display);font-size:24px">Выводы сезона 2026 и предложения на 2027</h2>
+    ${storyBlock()}
+    <div class="sec" style="margin-top:28px"><h2 style="font-family:var(--display);font-size:24px">Подробно: выводы сезона 2026 и предложения на 2027</h2>
       ${RT.оговорка ? `<p class="caveat" style="margin:4px 0 14px">${esc(RT.оговорка)}</p>` : ""}
       ${RT.главное ? `<p class="lead" style="margin-top:0">${esc(RT.главное)}</p>` : ""}
       <div class="tiles reveal" style="margin-top:14px">
@@ -922,6 +983,7 @@ function viewRec(){
         <div class="tile warn"><b data-n="${REC.q.length || (RT.вопросы||[]).length}">0</b><span>${wd(REC.q.length || (RT.вопросы||[]).length,"вопрос")} агроному</span></div>
       </div></div>
     ${(RT.выводы||[]).length ? `<div class="sec"><h2>Главное о сезоне</h2><ul class="rlist">${RT.выводы.map(([t,x])=>`<li><b>${esc(t)}</b>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+    ${cmpBlock()}
     ${lag.length ? `<div class="sec"><h2>Поля, которые отставали от соседей</h2><p class="note">Июль, сравнение с полями той же культуры и с похожим сроком сева. Культура и дата сева взяты из журнала работ.</p><div class="list">${lag.map(itemHTML).join("")}</div></div>` : ""}
     ${rp.length ? `<div class="sec"><h2>Рапс, переведённый в пар</h2><p class="note">В базе пар, по журналу рапс посеян 17-24 мая и задискован 4-18 июля. На снимках изменения видны в те же дни. Уточняем у агронома.</p><div class="btnrow">${rp.map(f=>fbtn(f.n)).join("")}</div></div>` : ""}
     ${REC.rows.length ? `<div class="sec"><h2>По полям: возможные причины и что можно попробовать</h2><p class="note">Это предположения по имеющимся данным. Подтвердить или опровергнуть их могут агроном и команда хозяйства.</p>
@@ -929,26 +991,297 @@ function viewRec(){
     ${(RT.на_2027||[]).length ? `<div class="sec"><h2>Что можно рассмотреть на 2027</h2><p class="note">По изученным данным можно предложить следующее. Это варианты для обсуждения с агрономом, а не готовые решения.</p><div class="rgrid">${RT.на_2027.map(([t,xs])=>`<div class="card"><h3>${esc(t)}</h3><ul>${xs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div></div>` : ""}
     ${bd.пункты ? `<div class="sec"><h2>Больше данных - точнее рекомендации</h2><p class="lead" style="margin-top:0;font-size:16px">${esc(bd.текст)}</p><ul class="rlist">${bd.пункты.map(([t,x])=>`<li><b>${esc(t)}</b>${esc(x)}</li>`).join("")}</ul></div>` : ""}
     ${(RT.расхождения||[]).length ? `<div class="sec"><h2>Почему возможны расхождения с тем, что было на поле</h2><div class="rgrid">${RT.расхождения.map(([t,x])=>`<div class="card"><h3>${esc(t)}</h3><p class="note">${esc(x)}</p></div>`).join("")}</div></div>` : ""}
-    ${(REC.q.length || (RT.вопросы||[]).length) ? `<div class="sec"><h2>Вопросы агроному</h2><p class="note">Ответы агронома уточнят выводы, базу и правила для плагина и дашборда.</p><div class="card" style="overflow-x:auto"><table class="qtab"><thead><tr><th>№</th><th>Вопрос</th><th class="dat">Что видно по данным</th><th>Ответ</th></tr></thead><tbody>${(REC.q.length ? REC.q.map(q=>[q.n,q.вопрос,q.данные,q.ответ]) : RT.вопросы.map((q,k)=>[k+1,q[0],q[1],""])).map(([n,q,d,a])=>`<tr><td>${esc(n)}</td><td>${esc(q)}</td><td class="dat note">${esc(d)}</td><td class="${a?"":"ans"}">${a?esc(a):"ждём"}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+    ${qaBlock()}
     <p class="note">Выводы составлены по снимкам Sentinel-2, журналу работ SmartAgro и фото дрона${REC.upd?`, обновлено ${esc(REC.upd)}`:""}.</p>
   </section>`;
   app.querySelectorAll(".tile b").forEach(b => countUp(b, +b.dataset.n));
-  bindItems(app);
+  bindItems(app); bindQA(app); bindStory(app);
+}
+// ---------- карта: нажал на поле - снизу выезжает его карточка ----------
+function openFieldSheet(i){
+  const f = F[i]; if (!f) return;
+  closeSheet(); mapState.pick = i; if (MAP) { MAP.paint(mapState.mode, mapState.di); MAP.focusField(i); }
+  { const mb = $("#mapHost"); if (mb && innerWidth < 900) window.scrollTo({top: mb.getBoundingClientRect().top + scrollY - 8, behavior: reduce ? "auto" : "smooth"}); }
+  const phs = (photosByField[f.n] || []).slice(0, 3), nph = (photosByField[f.n] || []).length;
+  const a = (f.st === "bad" || f.st === "warn") ? advice(f) : null;
+  const say = f.st === "ok" ? "Поле прошло сезон на уровне соседних полей той же культуры." : f.st === "none" ? "Поле без посева в этом году." : (f.why || ST[f.st]);
+  const rank = {bad:0, warn:1}, others = F.filter(x => x.i !== i && (x.st === "bad")).sort((x,y) => rank[x.st]-rank[y.st] || y.zh - x.zh).slice(0, 3);
+  document.body.insertAdjacentHTML("beforeend", `<div class="sheetbg"></div><div class="sheet fsheet" role="dialog" aria-label="Поле ${esc(f.n)}">
+    <span class="grab" aria-hidden="true"></span>
+    <div class="sh"><b>${esc(f.n)}</b><button class="close" aria-label="Закрыть">&times;</button></div>
+    <div class="dtop"><span class="badge ${f.st}">${ST[f.st]}</span><span class="muted" style="font-size:13px">${esc(cap(f.c).toLowerCase())}, ${nf(f.ha)} га</span></div>
+    <p style="margin:8px 0">${esc(say)}</p>
+    ${f.s ? `<div class="chart">${seasonChart(f)}</div>` : ""}
+    ${a ? `<div class="drows" style="grid-template-columns:1fr"><dl><dt>Посмотреть</dt><dd>${esc(a.look)}</dd><dt>Проверить</dt><dd>${esc(a.check)}</dd><dt>Сделать</dt><dd>${esc(a.doIt)}</dd></dl></div>` : ""}
+    ${phs.length ? `<div class="photos" style="margin-top:10px">${phs.map(photoBtn).join("")}</div>${nph > 3 ? `<p class="note">Ещё ${nph-3} фото в карточке поля.</p>` : ""}` : ""}
+    <div class="btnrow" style="margin-top:12px"><button class="btn pri" id="shopen">Карточка поля</button></div>
+    ${others.length ? `<div class="fssub" style="margin-top:16px">Ещё требуют внимания</div><div class="attn-list">${others.map(x => `<button data-sf="${x.i}"><span class="s" style="background:var(--${x.st})"></span><span><b>${esc(x.n)}</b> <span class="r">${esc(cap(x.c).toLowerCase())}</span></span><span class="r">${nf(x.ha)} га</span></button>`).join("")}</div>` : ""}
+  </div>`);
+  const sh = $(".sheet");
+  const close = () => { closeSheet(); mapState.pick = null; if (MAP) MAP.paint(mapState.mode, mapState.di); };
+  $(".sheetbg").onclick = close; $(".close", sh).onclick = close;
+  $("#shopen").onclick = () => { closeSheet(); mapState.pick = null; go("f-" + f.i); };
+  sh.querySelectorAll("[data-sf]").forEach(b => b.onclick = () => openFieldSheet(+b.dataset.sf));
+  bindPhotos(sh, (photosByField[f.n] || []));
+  // смахнуть вниз - закрыть
+  let y0 = null; sh.addEventListener("touchstart", e => { y0 = sh.scrollTop <= 0 ? e.touches[0].clientY : null; }, {passive:true});
+  sh.addEventListener("touchend", e => { if (y0 != null && e.changedTouches[0].clientY - y0 > 90) close(); y0 = null; }, {passive:true});
+}
+// ---------- сверка сезона с 2024 и 2025 годами (текст по итогам сравнения лет) ----------
+const CMP = window.DASH.cmp || (window.DASH.year === 2026 ? {
+  intro: "Разработчик добавил в разбор данные АгроАналитики (SmartAgro) за 2024-2025 годы: севооборот, журнал работ, урожайность, а также снимки спутника за эти годы. В связи с этим выводы 2026 года сверены с прошлыми сезонами: часть подтвердилась, часть поправлена. Итог предварительный, его нужно сверить с агрономом.",
+  agree: [
+    ["Поля 123+, 123+ часть 2 и 43", "отставали и по снимкам, и по урожаю (на 5-12 ц/га ниже середины культуры). Вывод по ним стал надёжнее."],
+    ["Постоянные слабые места есть, но их немного", "40 пятен на 124 га были слабыми два года из трёх, 14 из них - все три года. Там, скорее всего, причина в почве или рельефе."],
+    ["Горох после пшеницы лучше, чем после кукурузы", "так было и в 2025, и в 2026."]
+  ],
+  differ: [
+    ["Снимки и урожай в 2026 почти не совпали", "в 2025 более зелёное поле давало больше зерна (у пшеницы связь сильная), в 2026 связь почти пропала. Возможно, урожай решался уже после июля, или урожайность записана по полям приблизительно."],
+    ["Большинство слабых зон 2026 - новые", "81 из 104 зон (348 га) раньше слабыми не были. Значит, причина чаще в работах и сроках 2026, а не в почве."],
+    ["11 из 13 отстающих полей раньше были на уровне", "отставание 2026 похоже на последствия сроков сева и неполных обработок этого года."],
+    ["Есть ошибки в урожайности", "например, 433,8 ц/га на \"№ 1 К\" в 2025 и ровно 33,0 ц/га у всех полей ячменя 2025. Такие цифры в сравнение не брали."]
+  ],
+  fixed: [
+    "Поля 50, №1 Ёлки, №4/3 3 КЛ и 4/1 К 2 КЛ дали урожай выше середины культуры. Вывод об их отставании считаем недоказанным.",
+    "Слабые зоны 2026 больше не считаем почвенными по умолчанию. Почвенными считаем только 14 мест, которые были слабыми все три года, и там предлагаем пробы почвы (в первую очередь №4 и Разработка-Аэродром).",
+    "Выводы \"по зелени\" 2026 проверяем по урожаю, а не только по снимкам.",
+    "Поле 24/2 (рапс три года подряд) вынесли отдельно: слабое место там может быть от болезней и вредителей, а не от почвы."
+  ],
+  next: "На 2027 можно рекомендовать: рапс ставить после чечевицы или гороха (в 2026 после чечевицы 13,1 ц/га, после рапса и пшеницы около 6), пробы почвы на постоянных пятнах, сев вовремя и обработки по всей площади поля, учёт урожая по каждому полю."
+} : null);
+function cmpBlock(){
+  if (!CMP) return "";
+  const li = a => a.map(([t,x]) => `<li><b>${esc(t)}:</b> ${esc(x)}</li>`).join("");
+  return `<div class="sec" id="cmp"><h2>Сверка с 2024 и 2025 годами</h2>
+    <p class="lead" style="margin-top:0;font-size:16px">${esc(CMP.intro)}</p>
+    <div class="rgrid">
+      <div class="card"><h3>Что сходится</h3><ul class="clist">${li(CMP.agree)}</ul></div>
+      <div class="card"><h3>Что расходится</h3><ul class="clist">${li(CMP.differ)}</ul></div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent)"><h3>Что поправили в выводах 2026</h3><ul class="clist">${CMP.fixed.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+    <p class="note" style="max-width:none">${esc(CMP.next)}</p></div>`;
+}
+// ---------- отчёт сезона по шагам: итог, где теряли, что подтвердилось, план ----------
+function storyBlock(){
+  const Y = window.DASH.year || "", bad = tot("bad"), haOf = a => a.reduce((s,f)=>s+f.ha,0);
+  const byP = {}; Z.forEach(z => { const k = z.p; (byP[k] ||= {p:k, ha:0, n:0}); byP[k].ha += z.ha; byP[k].n++; });
+  const ps = Object.values(byP).sort((a,b) => b.ha - a.ha), mx = ps.length ? ps[0].ha : 1;
+  const plan = (RT.на_2027 || []).map(x => Array.isArray(x[1]) ? [x[0], x[1][0]] : x).slice(0, 4);
+  const step = (n, t) => `<span class="sstep">Шаг ${n} из 4 · ${t}</span>`;
+  return `<div class="story">
+    <section class="shero">${step(1, "Итог")}
+      <h2 class="stitle">Сезон ${Y}: что получилось</h2>
+      <p>${esc(RT.главное || `Слабые места нашлись на ${nf(zoneHa)} га, это ${nf(zoneHa/sownHa*100,1)}% посевов.`)}</p>
+      <div class="tiles" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+        <div class="tile bad"><b data-n="${bad.length}">0</b><span>${pl(bad.length,"поле с проблемой","поля с проблемой","полей с проблемой")}, ${nf(haOf(bad))} га</span></div>
+        <div class="tile zone"><b data-n="${Math.round(zoneHa)}">0</b><span>га слабых мест внутри полей (${Z.length} ${wd(Z.length,"участок")})</span></div>
+      </div></section>
+    <section class="spart">${step(2, "Где теряли")}
+      <h2>Какие слабые места были чаще всего</h2>
+      <div class="sbars">${ps.map(o => `<div class="lbar"><div class="sbl"><span>${esc(PAT[o.p][1])}</span><b>${nf(o.ha)} га</b></div><div class="sbt"><i style="width:${(o.ha/mx*100).toFixed(1)}%;background:var(--${PAT[o.p][0]})"></i></div></div>`).join("")}</div>
+      <p class="note">Площадь слабых участков внутри полей по виду. Причины - предположения, их подтверждает агроном.</p></section>
+    ${CMP ? `<section class="spart">${step(3, "Что подтвердилось")}
+      <h2>Сверка с прошлыми годами</h2>
+      <ul class="clist">${CMP.agree.map(([t]) => `<li>${esc(t)}</li>`).join("")}</ul>
+      <div class="btnrow"><button class="btn" data-jump="cmp">Подробнее о сверке</button></div></section>` : ""}
+    ${plan.length ? `<section class="spart">${step(4, "План")}
+      <h2>Что обсудить с командой на ${+Y + 1 || ""}</h2>
+      <ol class="splan">${plan.map(([t,x]) => `<li><b>${esc(t)}.</b> ${esc(x)}</li>`).join("")}</ol>
+      <div class="btnrow noprint"><button class="btn pri" id="pdf">Скачать отчёт PDF</button><button class="btn" data-go="main">Показать на карте</button></div></section>` : ""}
+  </div>`;
+}
+function bindStory(root){
+  root.querySelectorAll("[data-jump]").forEach(b => b.onclick = () => { const el = document.getElementById(b.dataset.jump); if (el) el.scrollIntoView({behavior: reduce ? "auto" : "smooth"}); });
+  root.querySelectorAll(".story [data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
+  const p = $("#pdf", root); if (p) p.onclick = () => { root.querySelectorAll("details").forEach(d => d.open = true); window.print(); };
+}
+// ---------- вопросы агроному: ответ прямо на странице, отправка готовым сообщением ----------
+// Сайт без сервера: ответы хранятся черновиком на этом устройстве и уходят сообщением (Telegram, почта, копия).
+const QA_EXTRA = [
+  {g:"Севооборот 2027", вопрос:"Какой севооборот на 2027: какая культура будет на каждом поле? Можно таблицей \"поле - культура 2027\".", данные:"по ней дашборд покажет, где новая культура попадает на слабые места 2026 и что проверить до сева"},
+  {g:"Урожай и данные прошлых лет", вопрос:"Урожайность 2026 по полям: это факт весовой по каждому полю или распределена приблизительно?", данные:"в 2026 связь зелени на снимках с урожаем почти пропала, в 2025 была сильной"},
+  {g:"Урожай и данные прошлых лет", вопрос:"Ячмень 2025: у всех 6 полей ровно 33,0 ц/га - это средняя?", данные:"одинаковая цифра по всем полям"},
+  {g:"Урожай и данные прошлых лет", вопрос:"\"№ 1 К\" 2025: 433,8 ц/га - опечатка? Какая верная?", данные:"значение в 10 раз выше обычного"},
+  {g:"Урожай и данные прошлых лет", вопрос:"Лён 2026: середина 0,86 - в каких единицах?", данные:"не похоже на ц/га"},
+  {g:"Урожай и данные прошлых лет", вопрос:"Поля 117, 118, 124 в 2026: лён или ячмень? И что на 49/2 и Саблина?", данные:"в базе и журнале культура расходится"},
+  {g:"Урожай и данные прошлых лет", вопрос:"Урожайность 2025 записана только по 90 полям - остальные есть где-то ещё?", данные:"в 2025 полей с культурой 204"},
+  {g:"Урожай и данные прошлых лет", вопрос:"Поле 24/2: рапс действительно три года подряд?", данные:"слабое пятно 41 га в 2024 и 2025"},
+  {g:"Урожай и данные прошлых лет", вопрос:"44 строки полей SmartAgro не сопоставились с нашими (список есть) - поможете сопоставить?", данные:"без этого часть полей выпадает из сравнения"}
+];
+const QA_KEY = "tk_answers_" + (window.DASH.year || "");
+function qaList(){
+  const base = REC.q.length ? REC.q.map(q => ({g:"Сезон " + (window.DASH.year || ""), вопрос:q.вопрос, данные:q.данные, ответ:q.ответ}))
+    : (RT.вопросы || []).map(q => ({g:"Сезон " + (window.DASH.year || ""), вопрос:q[0], данные:q[1]}));
+  // вопрос про урожайность 2026 из старого списка заменён более точным из сравнения лет
+  const seen = new Set(base.map(q => q.вопрос));
+  const all = [QA_EXTRA[0], ...base.filter(q => !/^Есть ли урожайность/.test(q.вопрос)), ...QA_EXTRA.slice(1).filter(q => !seen.has(q.вопрос))];
+  all.forEach((q,k) => { q.n = k + 1; q.id = q.вопрос.slice(0, 60); });
+  return all;
+}
+function qaLoad(){ try { return JSON.parse(localStorage.getItem(QA_KEY) || "{}"); } catch (e) { return {}; } }
+function qaSave(o){ try { localStorage.setItem(QA_KEY, JSON.stringify(o)); } catch (e) {} }
+function qaBlock(){
+  const L = qaList(); if (!L.length) return "";
+  const A = qaLoad(); let g0 = "";
+  return `<div class="sec" id="qa"><h2>Вопросы агроному</h2>
+    <p class="note">Можно ответить прямо здесь: напишите ответ под вопросом, затем нажмите "Поделиться ответами". Ответы сохраняются на этом устройстве, их можно дописывать в несколько заходов. Отвечать на все не обязательно.</p>
+    <div class="stack qa">${L.map(q => { const head = q.g !== g0 ? `<h3 class="qag">${esc(g0 = q.g)}</h3>` : "";
+      return head + `<div class="card qai"><div class="qq"><span class="qn">${q.n}</span><div><b>${esc(q.вопрос)}</b>${q.данные ? `<p class="note">Почему спрашиваем: ${esc(q.данные)}</p>` : ""}</div></div>
+        ${q.ответ ? `<p class="qdone"><b>Ответ:</b> ${esc(q.ответ)}</p>` : `<textarea class="qta" data-q="${esc(q.id)}" rows="2" placeholder="Ваш ответ">${esc(A[q.id] || "")}</textarea>`}</div>`; }).join("")}
+      <div class="card qsend">
+        <label class="note" for="qwho">Кто отвечает</label><input id="qwho" class="qin" placeholder="Имя, должность" value="${esc(A.__who || "")}">
+        <p class="note" id="qcount"></p>
+        <div class="btnrow"><button class="btn pri" id="qshare">Поделиться ответами</button><button class="btn" id="qcopy">Скопировать текст</button></div>
+        <p class="note">Откроется меню телефона "Поделиться": выберите МАКС, Telegram, WhatsApp или почту и кому отправить.</p>
+        <p class="note" id="qmsg" role="status"></p>
+      </div></div></div>`;
+}
+function bindQA(root){
+  const box = $("#qa", root); if (!box) return;
+  const L = qaList(), A = qaLoad();
+  const count = () => { const n = L.filter(q => (A[q.id] || "").trim()).length; $("#qcount").textContent = n ? `Ответов: ${n} из ${L.length}.` : "Пока нет ни одного ответа."; return n; };
+  box.querySelectorAll(".qta").forEach(t => t.oninput = () => { A[t.dataset.q] = t.value; qaSave(A); count(); });
+  $("#qwho").oninput = e => { A.__who = e.target.value; qaSave(A); };
+  const text = () => { const d = new Date(), who = (A.__who || "").trim();
+    const rows = L.filter(q => (A[q.id] || "").trim()).map(q => `${q.n}. ${q.вопрос}\nОтвет: ${A[q.id].trim()}`);
+    return `Ответы на вопросы по дашборду ${window.DASH.farm || ""}, ${d.toLocaleDateString("ru-RU")}${who ? ", " + who : ""}\n\n${rows.join("\n\n")}`; };
+  const msg = s => $("#qmsg").textContent = s;
+  const ready = () => { if (!count()) { msg("Сначала напишите хотя бы один ответ."); return false; } return true; };
+  const copy = async () => { try { await navigator.clipboard.writeText(text()); return true; } catch (e) {
+    const t = document.createElement("textarea"); t.value = text(); document.body.appendChild(t); t.select(); let ok = false; try { ok = document.execCommand("copy"); } catch (_) {} t.remove(); return ok; } };
+  $("#qshare").onclick = async () => { if (!ready()) return;
+    if (navigator.share) { try { await navigator.share({title:"Ответы агронома", text:text()}); msg("Готово. Если отправили - спасибо!"); return; } catch (e) { if (e.name === "AbortError") return; } }
+    msg(await copy() ? "Текст скопирован. Откройте МАКС или другой мессенджер, вставьте и отправьте." : "Не получилось скопировать. Выделите ответы и скопируйте вручную."); };
+  $("#qcopy").onclick = async () => { if (!ready()) return; msg(await copy() ? "Текст скопирован." : "Не получилось скопировать."); };
+  count();
+}
+// ---------- "Сегодня": что посмотреть, что сделать, что проверить ----------
+// Подсказки по виду слабого участка (код из PAT): что сделать и что проверить
+const ACT = {
+  p1: ["Если подтвердятся сорняки или падалица - гербицид до сева на всё поле, а не на часть.", "Пройти участок: какие сорняки, была ли там обработка гербицидом и на какой площади."],
+  p2: ["Если место постоянное (солонец, низина, бугор) - вести его отдельным контуром: своя норма высева, без лишних затрат.", "Посмотреть почву на участке: низина, солонец, плешины. Весной - стоит ли там вода."],
+  p3: ["Стараться сеять поле за один заход; если часть сеяли позже - отметить её в журнале отдельным контуром.", "Сверить с журналом, какую часть поля сеяли позже, и как работали сеялки."],
+  p4: ["В июле облетать такие места дроном первыми и решать с защитой по фото.", "Посмотреть фото и поле в июле: болезнь, вредители, полегание, засуха на лёгкой почве."],
+  p5: ["Обычно ничего делать не нужно.", "Убедиться, что это бугор или лёгкая почва."]
+};
+const LAG = ["Решение по подкормке или защите - после осмотра, вместе с агрономом.", "Осмотреть поле целиком и соседнее поле той же культуры: густота, сорняки, болезни."];
+// поиск поля в тексте вопроса агроному: "Поле 56", "47", "Горбатое" и т.п.
+const fKey = n => { const w = String(n).toLowerCase().replace(/№\s*/g, "").split(/\s+/); return w[0] === "поле" && w[1] ? w[1] : w[0]; };
+const qFor = f => { const k = fKey(f.n).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); const re = new RegExp(`(^|[^\\wа-яё/-])${k}(?![\\wа-яё/-])`, "i");
+  return (REC.q || []).filter(q => re.test(q.вопрос)); };
+function advice(f){
+  const zs = Z.filter(z => z.f === f.i).sort((a,b) => b.ha - a.ha), z = zs[0];
+  const rr = f.rec != null ? REC.rows[f.rec] : null, qs = qFor(f);
+  const phs = photosByField[f.n] || [], fgs = groupsByField[f.n] || [];
+  const code = z ? PAT[z.p][0] : null;
+  const look = z
+    ? `Слабый участок ${nf(z.ha,1)} га${zs.length > 1 ? ` (всего ${zs.length} ${wd(zs.length,"участок")}, ${nf(f.zh,1)} га)` : ""}: ${PAT[z.p][1].toLowerCase()}.${z.j ? (/^по журналу/i.test(z.j) ? " " : " По журналу: ") + z.j : ""}`
+    : (f.why || "Отставало от соседних полей той же культуры.");
+  const doIt = rr ? rr.что_делать.charAt(0).toUpperCase() + rr.что_делать.slice(1) + "." : (code ? ACT[code][0] : LAG[0]);
+  const check = (code ? ACT[code][1] : LAG[1]) + (phs.length ? "" : " Фото дрона по полю нет - облететь участок.");
+  return {z, look, doIt, check, qs, ph: phs[0], fg: fgs[0]};
+}
+function decisionCard(f, open){
+  const a = advice(f);
+  const thumb = a.ph != null ? `<button class="dthumb" data-ph="${a.ph}" data-list="${(photosByField[f.n]||[]).join(",")}" aria-label="Фото дрона"><img src="${M.photos[a.ph].img}" alt="" loading="lazy"></button>`
+    : a.z && a.z.img ? `<button class="dthumb" data-f="${f.i}" aria-label="Открыть поле"><img src="${a.z.img}" alt="Слабый участок на снимке" loading="lazy"></button>` : "";
+  return `<article class="dcard ${f.st}">
+    <div class="dtop"><span class="badge ${f.st}">${ST[f.st]}</span><span class="muted" style="font-size:13px">${esc(cap(f.c).toLowerCase())}, ${nf(f.ha)} га</span></div>
+    <h3 class="dt">${esc(f.n)}</h3>
+    <details class="dact" ${open ? "open" : ""}><summary>Что посмотреть, сделать, проверить</summary>
+      <div class="drows">${thumb}
+        <dl><dt>Посмотреть</dt><dd>${esc(a.look)}</dd>
+        <dt>Проверить</dt><dd>${esc(a.check)}</dd>
+        <dt>Сделать</dt><dd>${esc(a.doIt)}</dd>
+        ${a.qs.length ? `<dt>Спросить агронома</dt><dd>${a.qs.map(q => esc(q.вопрос)).join("<br>")}</dd>` : ""}</dl></div>
+    </details>
+    <div class="btnrow"><button class="btn pri" data-f="${f.i}">Карточка поля</button></div>
+  </article>`;
+}
+function farmLine(){ // средняя зелень хозяйства по датам, с весом по площади
+  return DATES.map((d,k) => { let s = 0, h = 0; sown.forEach(f => { const v = f.s && f.s[k]; if (v != null) { s += v*f.ha; h += f.ha; } }); return h > sown.reduce((a,f)=>a+f.ha,0)*.25 ? s/h : null; });
+}
+function yearChart(){
+  const W = 640, H = 200, L = 34, R = 10, T = 12, B = 28;
+  const x = ms => L + (ms-X0)/(X1-X0)*(W-L-R), y = v => T + (1-v/.9)*(H-T-B);
+  const p = farmLine().map((v,k) => v == null ? null : [x(Date.parse(DATES[k])), y(v)]).filter(Boolean);
+  if (p.length < 2) return "";
+  const months = [5,6,7,8,9,10].map(m => Date.parse(`2026-${String(m).padStart(2,"0")}-01`)), mn = ["май","июнь","июль","август","сентябрь","октябрь"];
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Средняя зелень посевов хозяйства по снимкам 2026 года">
+    ${[0,.2,.4,.6,.8].map(v=>`<line class="ax" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text class="lbl" x="${L-6}" y="${y(v)+3}" text-anchor="end">${v.toFixed(1).replace(".",",")}</text>`).join("")}
+    ${months.map((ms,i)=>`<text class="lbl" x="${x(ms)+4}" y="${H-B+16}">${mn[i]}</text>`).join("")}
+    <polyline fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-dasharray="6 4" stroke-linejoin="round" points="${p.map(q=>q.join(",")).join(" ")}"/>
+  </svg><div class="key"><span><i style="background:var(--muted)"></i>2026, в среднем по засеянным полям</span><span><i style="background:var(--accent)"></i>2027 - появится с первыми снимками</span></div>`;
+}
+function viewToday(){
+  const bad = tot("bad"), warn = tot("warn"), ok = tot("ok"), haOf = a => a.reduce((s,f)=>s+f.ha,0);
+  const attn = bad.slice().sort((a,b) => (b.zh - a.zh) || ((a.jul??0) - (b.jul??0)));
+  const last = DATES[DATES.length-1], seen = sown.filter(f => f.s && f.s[DATES.length-1] != null).length;
+  const flights = [...new Set(M.pts.map(p=>p.d))].sort(), lastFly = flights[flights.length-1];
+  const now = new Date(), WD = ["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"];
+  const today = `${WD[now.getDay()].replace(/^./, c => c.toUpperCase())}, ${now.getDate()} ${MON[now.getMonth()]} ${now.getFullYear()}`;
+  const hr = now.getHours(), hello = hr < 5 ? "Доброй ночи" : hr < 12 ? "Доброе утро" : hr < 18 ? "Добрый день" : "Добрый вечер";
+  const over = (now - Date.parse(last)) / 864e5 > 45; // сезон закончился - сводка на подготовку к следующему
+  // поля с постоянными слабыми местами (почва) и с сорняками - что проверить до сева 2027
+  const byPat = code => { const s = new Set(); Z.forEach(z => { if (PAT[z.p][0] === code && z.f != null) s.add(z.f); }); return [...s].map(i => F[i]).filter(Boolean).sort((a,b) => b.zh - a.zh); };
+  const soil = byPat("p2"), weeds = byPat("p1"), late = byPat("p3");
+  const P27 = window.DASH.plan27 || null; // { "имя поля": "культура 2027" } - когда агроном пришлёт севооборот
+  const chips = arr => arr.map(f => `<button class="btn" data-f="${f.i}">${esc(f.n)}${P27 && P27[f.n] ? ` → ${esc(cap(P27[f.n]).toLowerCase())}` : ""}</button>`).join("");
+  const qn = qaList().length;
+  app.innerHTML = `<section class="view">
+    <div class="hello"><span class="muted">${today}</span><h2 class="hi">${hello}</h2></div>
+    <div class="card todaybox">
+      <h3>Хозяйство ${over ? "по итогам сезона" : "сегодня"}</h3>
+      <div class="tiles t3 reveal">
+        <button class="tile ok" data-go="main"><b data-n="${ok.length}">0</b><span>в норме, ${nf(haOf(ok))} га</span></button>
+        <button class="tile warn" data-go="main"><b data-n="${warn.length}">0</b><span>присмотреться, ${nf(haOf(warn))} га</span></button>
+        <button class="tile bad" data-go="main"><b data-n="${bad.length}">0</b><span>проблема, ${nf(haOf(bad))} га</span></button>
+      </div>
+      <p class="note" style="max-width:none">Последний снимок спутника: ${fmtD(last)}, видно ${seen} из ${sown.length} ${pl(sown.length,"поля","полей","полей")}.${lastFly ? ` Последний облёт дрона: ${fmtD(lastFly)}.` : ""}${over ? " Сезон закончен: ниже - что проверить и решить до весны." : ""}</p>
+    </div>
+
+    <div class="sec">
+      <div class="shead"><h2>Что решить ${over ? "до сезона 2027" : "сегодня"}</h2><span class="muted" style="font-size:13px">${attn.length} ${wd(attn.length,"поле")}</span></div>
+      <p class="note">Это предположения по снимкам, журналу работ и фото дрона. Решение принимается после осмотра поля и разговора с агрономом.</p>
+      <div class="stack" id="dlist">${attn.slice(0,3).map((f,k) => decisionCard(f, k === 0)).join("")}</div>
+      ${attn.length > 3 ? `<button class="more" id="dmore">Ещё ${attn.length-3} ${wd(attn.length-3,"поле")} с проблемой</button>` : ""}
+    </div>
+
+    <div class="sec">
+      <h2>Подготовка к сезону 2027</h2>
+      <div class="card stack prep">
+        ${P27 ? `<p>Севооборот 2027 загружен. Рядом с полем показана культура, которая там будет.</p>`
+              : `<p class="caveat" style="margin:0"><b>Нужен севооборот 2027 от агронома</b> - таблица "поле - культура 2027". Тогда здесь будет видно, где новая культура попадает на прошлогодние слабые места, и что проверить до сева.</p>`}
+        ${soil.length ? `<div><b>Слабые места весь сезон, похоже на почву</b> - ${soil.length} ${wd(soil.length,"поле")}<p class="note">Весной посмотреть, стоит ли вода в понижениях; летом - солонцы, плешины. Если место постоянное, сеять его отдельно.</p><div class="btnrow">${chips(soil.slice(0,8))}</div></div>` : ""}
+        ${weeds.length ? `<div><b>Зеленело до всходов, похоже на сорняки или падалицу</b> - ${weeds.length} ${wd(weeds.length,"поле")}<p class="note">Перед севом проверить засорённость и записывать гербицид до сева на всю площадь, которую обработали.</p><div class="btnrow">${chips(weeds.slice(0,8))}</div></div>` : ""}
+        ${late.length ? `<div><b>Поздние всходы, сев в несколько заходов</b> - ${late.length} ${wd(late.length,"поле")}<p class="note">Планировать сев поля за один заход; если не выходит - записывать в журнал, какую часть сеяли позже.</p><div class="btnrow">${chips(late.slice(0,8))}</div></div>` : ""}
+        ${qn ? `<div><b>Вопросы агроному: ${qn}</b><p class="note">Ответы уточнят выводы и правила, по которым дашборд находит проблемы.</p><div class="btnrow"><button class="btn" data-go="rec-q">Ответить на вопросы</button></div></div>` : ""}
+      </div>
+    </div>
+
+    ${yearChart() ? `<div class="sec"><h2>2027 против 2026</h2><div class="card chart">${yearChart()}<p class="note" style="margin-top:8px">Средняя зелень по засеянным полям хозяйства. Когда придут снимки 2027 года, рядом встанет новая линия, и будет видно, идёт сезон лучше или хуже прошлого.</p></div></div>` : ""}
+  </section>`;
+  app.querySelectorAll(".tile b").forEach(b => countUp(b, +b.dataset.n));
+  const bind = r => { bindItems(r); bindPhotos(r); r.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go)); };
+  bind(app);
+  const more = $("#dmore"); if (more) more.onclick = () => { $("#dlist").insertAdjacentHTML("beforeend", attn.slice(3).map(f => decisionCard(f, false)).join("")); bind($("#dlist")); more.remove(); };
 }
 // ---------- маршруты ----------
 function go(h){ if (location.hash.slice(1) === h) route(); else location.hash = h; }
 function route(){
-  stop();
+  stop(); closeSheet(); if (!mapState.fs) mapState.pick = null;
   if (mapState.fs) { mapState.fs = false; mapState.crop = null; mapState.pick = null; document.body.style.overflow = ""; document.body.classList.remove("mapfs"); mapState.attn = false; closeSheet(); document.onkeydown = null; try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {} }
-  const h = location.hash.slice(1) || "main";
+  const h = location.hash.slice(1) || "today";
   const tab = h.startsWith("f-") ? null : h;
-  document.querySelectorAll('nav.tabs [role="tab"]').forEach(b => b.setAttribute("aria-selected", b.dataset.tab === (tab || "main")));
+  document.querySelectorAll('nav.tabs [role="tab"]').forEach(b => b.setAttribute("aria-selected", b.dataset.tab === (tab === "rec-q" ? "rec" : tab || "today")));
   if (h.startsWith("f-")) viewField(+h.slice(2));
   else if (h === "season") viewSeason();
   else if (h === "crops") viewCrops();
   else if (h === "photos") viewPhotos();
   else if (h === "rec") viewRec();
-  else viewMain();
+  else if (h === "rec-q") { viewRec(); const q = document.getElementById("qa"); if (q) { setTimeout(() => q.scrollIntoView({behavior: reduce ? "auto" : "smooth"}), 60); return; } }
+  else if (h === "main") viewMain();
+  else viewToday();
   window.scrollTo({top:0, behavior: reduce ? "auto" : "smooth"});
 }
 document.querySelectorAll('nav.tabs [role="tab"]').forEach(b => b.onclick = () => go(b.dataset.tab));
