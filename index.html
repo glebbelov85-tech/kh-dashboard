@@ -7,9 +7,9 @@
 <!-- Шаблон дашборда для руководителя. Данные берутся из data.js рядом
      (его пишет кнопка "Обновить дашборд", dashboard_export.py). -->
 <script>try{document.documentElement.dataset.theme=localStorage.getItem("tk_theme")||"dark"}catch(e){document.documentElement.dataset.theme="dark"}</script>
-<style>:root[data-theme="dark"]{color-scheme:dark;background:#141918}:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+<style>:root[data-theme="dark"]{color-scheme:dark;background:#0A0F0D}:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
 <title>Поля Тритикум 2026</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=PT+Serif:wght@700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=PT+Serif:wght@700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 /* Макет: телефон в первую очередь, одна колонка; на широком экране карта слева, список справа.
    Земляные нейтральные тона, один зелёный акцент, светофор отдельно от акцента, шкала зелени от бурого к зелёному. */
@@ -236,6 +236,8 @@ section.view{animation:rise .35s ease both}
 .rlist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
 .rlist li{font-size:15px;line-height:1.5}
 .rlist li b{display:block}
+.rtab td:first-child{color:inherit;width:auto}
+.rtab td{min-width:120px}
 .rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .rgrid .card h3{margin-bottom:8px}
 .rgrid ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14.5px;line-height:1.45}
@@ -362,6 +364,65 @@ section.view{animation:rise .35s ease both}
 .note{font-size:13px;color:var(--muted);max-width:70ch}
 button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tbl{overflow-x:auto}
+@media screen{
+/* ===== Стиль "Ночной спутник" (тёмная тема): приборная панель, моноширинные цифры, луч по карте ===== */
+:root[data-theme="dark"]{
+  --bg:#0A0F0D; --card:#111915; --fg:#E6EDE9; --muted:#93A79E; --line:#22302A; --soft:#16201B;
+  --accent:#A3E635; --accent-fg:#0A0F0D;
+  --ok:#4FA36B; --warn:#E9C46A; --bad:#FF8A4C; --none:#26302B;
+  --ok-bg:#132619; --warn-bg:#2B2513; --bad-bg:#33190F;
+  --ask:#8AB4F8; --ask-bg:#17233A; --zone:#FFD2BD;
+  --display:"Inter","Segoe UI",system-ui,sans-serif; --ui:"Inter","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  background:#0A0F0D}
+:root[data-theme="dark"] body{font-feature-settings:"cv11","ss01"}
+:root[data-theme="dark"] header.top{border-bottom-color:var(--line)}
+:root[data-theme="dark"] header.top h1{font-weight:700;letter-spacing:-.01em}
+:root[data-theme="dark"] header.top .upd{font-size:12.5px;color:var(--muted);position:relative;padding-left:14px}
+:root[data-theme="dark"] header.top .upd:not(:empty)::before{content:"";position:absolute;left:0;top:.5em;width:7px;height:7px;border-radius:50%;background:var(--accent);animation:nsBlink 1.6s ease-in-out infinite}
+:root[data-theme="dark"] .dcard .dt,:root[data-theme="dark"] h3.dt{font-family:var(--ui);letter-spacing:-.01em}
+@keyframes nsBlink{50%{opacity:.25}}
+:root[data-theme="dark"] .tag{font-family:var(--mono);border-color:#3A4D44;color:var(--muted)}
+:root[data-theme="dark"] h3,:root[data-theme="dark"] .fssub,:root[data-theme="dark"] .sstep,:root[data-theme="dark"] .drows dt{font-family:var(--mono);font-weight:600;letter-spacing:.08em}
+:root[data-theme="dark"] .card,:root[data-theme="dark"] .mapcard,:root[data-theme="dark"] .spart,:root[data-theme="dark"] .item,:root[data-theme="dark"] .sheet{border:1px solid var(--line)}
+:root[data-theme="dark"] .item:hover,:root[data-theme="dark"] .item:focus-visible{border-color:#3A4D44}
+:root[data-theme="dark"] .card,:root[data-theme="dark"] .dcard,:root[data-theme="dark"] .item{transition:border-color .2s,transform .2s}
+:root[data-theme="dark"] .dcard:hover{border-color:#3A4D44;transform:translateY(-1px)}
+/* плитки с цифрами */
+:root[data-theme="dark"] .tile{border:1px solid var(--line);border-top:0;position:relative;overflow:hidden;padding-bottom:16px}
+:root[data-theme="dark"] .tile::after{content:"";position:absolute;left:14px;right:14px;bottom:8px;height:3px;border-radius:2px;background:var(--line);transform-origin:left;animation:nsFill 1.1s .25s cubic-bezier(.2,.8,.2,1) both}
+:root[data-theme="dark"] .tile.ok::after{background:var(--ok)}:root[data-theme="dark"] .tile.warn::after{background:var(--warn)}:root[data-theme="dark"] .tile.bad::after{background:var(--bad)}:root[data-theme="dark"] .tile.zone::after{background:var(--zone)}:root[data-theme="dark"] .tile.ask::after{background:var(--ask)}
+@keyframes nsFill{from{transform:scaleX(0)}}
+:root[data-theme="dark"] .tile b{font-family:var(--mono);font-weight:600;letter-spacing:-.02em}
+:root[data-theme="dark"] .tile.bad b{color:var(--bad)}:root[data-theme="dark"] .tile.warn b{color:var(--warn)}
+:root[data-theme="dark"] .tiles.t3 .tile{background:var(--card)}
+:root[data-theme="dark"] .item .ha,:root[data-theme="dark"] .player .dt,:root[data-theme="dark"] .rank,:root[data-theme="dark"] .crop-opt .t{font-family:var(--mono);font-variant-numeric:tabular-nums}
+/* переключатели и кнопки */
+:root[data-theme="dark"] .seg{background:var(--card);border:1px solid var(--line)}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);box-shadow:none}
+:root[data-theme="dark"] .yrs button{font-family:var(--mono)}
+:root[data-theme="dark"] .btn,:root[data-theme="dark"] .fsbtn,:root[data-theme="dark"] .themebtn{border-radius:10px;border-color:#2F4038;background:#141E19}
+:root[data-theme="dark"] .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+:root[data-theme="dark"] .fsrow button[aria-pressed="true"]{color:var(--accent-fg)}
+:root[data-theme="dark"] .badge{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border-radius:6px;border:1px solid currentColor;padding:3px 8px}
+:root[data-theme="dark"] .badge.bad{border-color:rgba(255,138,76,.45)}:root[data-theme="dark"] .badge.warn{border-color:rgba(233,196,106,.4)}:root[data-theme="dark"] .badge.ok{border-color:rgba(79,163,107,.45)}:root[data-theme="dark"] .badge.none{border-color:var(--line)}
+/* карта: сетка и луч сканирования */
+:root[data-theme="dark"] .mapbox{background-color:#0D1411;background-image:linear-gradient(#17221D 1px,transparent 1px),linear-gradient(90deg,#17221D 1px,transparent 1px);background-size:24px 24px}
+:root[data-theme="dark"] .mapcard:not(.fs) .mapbox::after{content:"";position:absolute;top:0;bottom:0;left:-30%;width:30%;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(163,230,53,.12),transparent);animation:nsScan 5s linear infinite}
+@keyframes nsScan{to{left:110%}}
+:root[data-theme="dark"] .fpath{stroke:#0A0F0D}
+:root[data-theme="dark"] .fpath.sel{stroke:#fff;animation:nsSel 1.6s ease-in-out infinite}
+@keyframes nsSel{50%{stroke-width:4.5}}
+:root[data-theme="dark"] .zoom button{border-radius:10px;border-color:#2F4038;background:rgba(17,25,21,.9)}
+/* отчёт */
+:root[data-theme="dark"] .shero{background:var(--card);border:1px solid #2F4038;box-shadow:inset 0 3px 0 var(--accent)}
+:root[data-theme="dark"] .shero .tile{background:var(--soft)}
+/* нижнее меню - плавающая панель */
+:root[data-theme="dark"] nav.tabs{left:max(10px,calc(50% - 420px));right:max(10px,calc(50% - 420px));bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:6px;border:1px solid var(--line);border-radius:18px;background:rgba(17,25,21,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+:root[data-theme="dark"] nav.tabs button{border-radius:12px;min-height:48px;justify-content:center;transition:background .2s,color .2s}
+:root[data-theme="dark"] nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-fg)}
+@media(prefers-reduced-motion:reduce){:root[data-theme="dark"] .mapbox::after{display:none}}
+}
 </style>
 </head>
 <body>
@@ -378,6 +439,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-off
 </div>
 
 <nav class="tabs" role="tablist" aria-label="Разделы">
+  <button role="tab" data-tab="now" aria-selected="false" hidden><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Сейчас</button>
   <button role="tab" data-tab="today" aria-selected="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>Сегодня</button>
   <button role="tab" data-tab="main" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Карта</button>
   <button role="tab" data-tab="season" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M4 15l4-5 4 3 4-6 4 4"/></svg>Разбор сезона</button>
@@ -463,7 +525,7 @@ function tkYearView(B, y){
       pk: v.length ? Math.max(...v) : null, w:[], zh:0, zn:0, sow:null, lbl:"", note:"", p:o.p || "", y:o.y, yk:o.yk, wk:o.wk}; });
   const R = Y.rec || {};
   return {...B, year:+y, core:{...B.core, dates:Y.dates, zdates:[], fields, zones:[]}, media:{photos:[], groups:[], pts:[]},
-    rec:{text:R, rows:[], lag:fields.filter(f => f.st === "bad").map(f => f.n), rp:[], q:[], upd:R.дата || ""}, cmp:null, plan27:null, past:true};
+    rec:{text:R, rows:[], lag:fields.filter(f => f.st === "bad").map(f => f.n), rp:[], q:[], upd:R.дата || ""}, cmp:null, plan27:null, rot27:null, past:true};
 }
 function tkSetYear(y){
   const B = window.DASH_BASE; window.DASH = tkYearView(B, y);
@@ -848,14 +910,15 @@ function viewField(i){
     ${f.jc && f.c && f.jc.toUpperCase() !== f.c.toUpperCase() ? `<p class="note">В базе культура "${esc(cap(f.c).toLowerCase())}", по журналу работ - "${esc(cap(f.jc).toLowerCase())}". Для сравнения с соседями взята культура из журнала.</p>` : ""}
     ${rr ? `<div class="card" style="border-left:4px solid var(--accent)"><h3>Разбор и предложения</h3><dl class="prow"><dt>Что было</dt><dd>${esc(rr.что_было)}</dd><dt>Возможная причина</dt><dd>${esc(rr.причина)}</dd><dt>Что можно попробовать</dt><dd><b>${esc(rr.что_делать)}</b></dd></dl><p class="note" style="margin-top:8px">Причина - версия по спутнику, журналу и фото, подтвердить должен агроном.</p></div>` : ""}
     ${fieldYears(f)}
+    ${rotField(f)}
     <div class="card chart"><h3 style="margin-bottom:8px">Как росло поле</h3>${f.s ? seasonChart(f) : `<p class="muted">Нет снимков по этому полю.</p>`}
       <p class="note" style="margin-top:8px">Линия - сколько зелени на поле по снимкам спутника (индекс NDVI: 0 - голая земля, 0,8 и выше - густой здоровый посев). Пунктир - поля той же культуры с похожей датой сева. Значки внизу - работы из журнала SmartAgro, наведите или нажмите, чтобы увидеть подробности.</p></div>
     <div class="grid2">
       <div class="card fmap stack"><h3>Поле на карте</h3>${fieldMini(f)}<div class="legend"><span><i style="background:var(--bad);opacity:.6"></i>слабые участки</span>${npts?`<span><i style="background:#2c64a8;border-radius:50%"></i>точки съёмки дрона</span>`:""}</div></div>
-      <div class="card stack"><h3>Фото дрона</h3>${fgs.length ? fgs.map(gi=>groupBlock(gi,true)).join("") : `<p class="note">Дрон над этим полем в 2026 году не летал.</p>`}</div>
+      <div class="card stack"><h3>Фото дрона</h3>${fgs.length ? fgs.map(gi=>groupBlock(gi,true)).join("") : `<p class="note">Дрон над этим полем в ${CUR} году не летал.</p>`}</div>
     </div>
     ${zs.length ? `<h2 style="margin-top:6px">Слабые участки (${zs.length})</h2><div class="zgrid">${zs.map(z=>zoneCard(z,false)).join("")}</div>` : ""}
-    <div class="card"><h3 style="margin-bottom:6px">Что делали на поле</h3>${(f.w||[]).length ? `<ul class="journal">${f.w.map(w=>{const k=workKind(w[1]);return `<li><time>${w[0]}</time><span class="mk" style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;background:${k[1]};color:#fff;font-size:10px;font-weight:800">${k[0]}</span><span>${esc(w[1].charAt(0).toUpperCase()+w[1].slice(1))}</span><span class="ha">${esc(w[2])} га</span>${whoHTML(w[3])}</li>`}).join("")}</ul><p class="note" style="margin-top:6px">Из журнала гектарных работ SmartAgro за 2026 год. Под работой - кто её делал.</p>` : `<p class="note">Записей в журнале работ нет.</p>`}</div>
+    <div class="card"><h3 style="margin-bottom:6px">Что делали на поле</h3>${(f.w||[]).length ? `<ul class="journal">${f.w.map(w=>{const k=workKind(w[1]);return `<li><time>${w[0]}</time><span class="mk" style="display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;background:${k[1]};color:#fff;font-size:10px;font-weight:800">${k[0]}</span><span>${esc(w[1].charAt(0).toUpperCase()+w[1].slice(1))}</span><span class="ha">${esc(w[2])} га</span>${whoHTML(w[3])}</li>`}).join("")}</ul><p class="note" style="margin-top:6px">Из журнала гектарных работ SmartAgro за ${CUR} год. Под работой - кто её делал.</p>` : `<p class="note">Записей в журнале работ нет.</p>`}</div>
   </section>`;
   $("#back").onclick = () => history.length > 1 ? history.back() : go("today");
   bindPhotos(app); bindItems(app); bindWho(app);
@@ -1026,6 +1089,31 @@ function viewPhotos(){
   $("#pch").querySelectorAll("button").forEach(b => b.onclick = () => { photoFilter = b.dataset.v; $("#pch").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b)); drawG(); });
   drawG();
 }
+// ---------- севооборот следующего года: предложение (файл севооборот_ГГГГ.json в папке разбора) ----------
+function rotBlock(){
+  const R = window.DASH.rot27; if (!R) return "";
+  const byN = n => F.find(f => f.n === n);
+  const fb = n => { const f = byN(n); return f ? `<button class="btn" data-f="${f.i}">${esc(n)}</button>` : `<span class="btn" style="cursor:default">${esc(n)}</span>`; };
+  const S = R.структура || [], mx = Math.max(1, ...S.map(r => Math.max(r[1], r[3])));
+  const bar = (v, col) => `<div class="sbt" style="margin:2px 0"><i style="width:${(v/mx*100).toFixed(1)}%;background:${col}"></i></div>`;
+  return `<div class="sec" id="rot"><h2 style="font-family:var(--display);font-size:24px">Севооборот ${R.year}: предложение</h2>
+    ${R.главное ? `<p class="lead" style="margin-top:0">${esc(R.главное)}</p>` : ""}
+    ${S.length ? `<table class="qtab rtab"><thead><tr><th>Культура</th><th>${R.year - 1}</th><th>${R.year} (предложение)</th></tr></thead><tbody>
+      ${S.map(r => `<tr><td>${esc(r[0])}</td><td>${r[1] ? `${nf(r[1])} га · ${r[2]}%` : "-"}${bar(r[1], "var(--muted)")}</td><td><b>${r[3] ? `${nf(r[3])} га · ${r[4]}%` : "-"}</b>${bar(r[3], "var(--accent)")}</td></tr>`).join("")}</tbody></table>` : ""}
+    ${(R.выводы||[]).length ? `<ul class="rlist" style="margin-top:16px">${R.выводы.map(([t,x]) => `<li><b>${esc(t)}</b>${esc(x)}</li>`).join("")}</ul>` : ""}
+    ${(R.группы||[]).length ? `<h3 style="margin-top:20px">Что сеять по группам полей</h3><div class="rgrid">${R.группы.map(g => `<div class="card"><span class="note">${esc(g[0])}, ${nf(g[1])} га</span><h3 style="margin:4px 0">${esc(g[2])}</h3><p class="note">${esc(g[3])}</p></div>`).join("")}</div>` : ""}
+    ${(R.особые||[]).length ? `<h3 style="margin-top:20px">Поля, на которые стоит посмотреть отдельно</h3><div class="rgrid">${R.особые.map(([t,x,ns]) => `<div class="card"><h3>${esc(t)}</h3><p class="note">${esc(x)}</p><div class="btnrow">${(ns||[]).map(fb).join("")}</div></div>`).join("")}</div>` : ""}
+    <p class="note" style="margin-top:12px">Предложение по каждому полю - в карточке поля.${R.обновлено ? ` Обновлено ${esc(R.обновлено)}.` : ""}</p>
+    ${R.оговорка ? `<p class="caveat">${esc(R.оговорка)}</p>` : ""}
+  </div>`;
+}
+function rotField(f){
+  const R = window.DASH.rot27, o = R && R.fields ? R.fields[f.n] : null; if (!o) return "";
+  return `<div class="card stack"><h3>Севооборот ${R.year}: предложение</h3>
+    <p style="margin:0;font-size:18px"><b>${esc(o.к.charAt(0).toUpperCase() + o.к.slice(1))}</b>${o.alt ? `<span class="muted"> · запасной вариант: ${esc(o.alt)}</span>` : ""}</p>
+    ${o.why ? `<p class="note" style="margin:0">${esc(o.why.charAt(0).toUpperCase() + o.why.slice(1))}.</p>` : ""}
+    <p class="note" style="margin:0">Предложение для обсуждения с агрономом.</p></div>`;
+}
 function viewRec(){
   const byN = n => F.find(f => f.n === n);
   const fbtn = n => { const f = byN(n); return f ? `<button class="btn" data-f="${f.i}">${esc(n)}</button>` : `<span class="btn" style="cursor:default">${esc(n)}</span>`; };
@@ -1052,6 +1140,7 @@ function viewRec(){
     ${NEXT.length ? `<div class="sec"><h2>${PAST ? `Что можно было сделать иначе и что взять в ${NX}` : `Что можно рассмотреть на ${NX}`}</h2><p class="note">По изученным данным можно предложить следующее. Это варианты для обсуждения с агрономом, а не готовые решения.</p><div class="rgrid">${NEXT.map(([t,xs])=>`<div class="card"><h3>${esc(t)}</h3><ul>${xs.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div></div>` : ""}
     ${bd.пункты ? `<div class="sec"><h2>Больше данных - точнее рекомендации</h2><p class="lead" style="margin-top:0;font-size:16px">${esc(bd.текст)}</p><ul class="rlist">${bd.пункты.map(([t,x])=>`<li><b>${esc(t)}</b>${esc(x)}</li>`).join("")}</ul></div>` : ""}
     ${(RT.расхождения||[]).length ? `<div class="sec"><h2>Почему возможны расхождения с тем, что было на поле</h2><div class="rgrid">${RT.расхождения.map(([t,x])=>`<div class="card"><h3>${esc(t)}</h3><p class="note">${esc(x)}</p></div>`).join("")}</div></div>` : ""}
+    ${rotBlock()}
     ${qaBlock()}
     <p class="note">${PAST ? `Разбор ${YR} года составлен задним числом по снимкам Sentinel-2${YR >= 2025 ? ", журналу работ и урожайности SmartAgro" : " и севообороту SmartAgro"}.` : ""}${PAST ? "" : `Выводы составлены по снимкам Sentinel-2, журналу работ SmartAgro и фото дрона${REC.upd?`, обновлено ${esc(REC.upd)}`:""}.`}</p>
   </section>`;
@@ -1269,8 +1358,9 @@ function decisionCard(f, open){
 }
 const ycol = (y, k) => +y === CUR ? "var(--accent)" : ["#a3a89e", "#d9a85a", "#c49be0"][k % 3];
 function farmLine(fs, dates){ // средняя зелень хозяйства по датам, с весом по площади
-  const tot = fs.filter(f => f.c).reduce((a,f) => a + f.ha, 0);
-  return dates.map((d,k) => { let s = 0, h = 0; fs.forEach(f => { const v = f.s && f.s[k]; if (f.c && v != null) { s += v*f.ha; h += f.ha; } }); return h > tot*.25 ? s/h : null; });
+  const sownF = fs.filter(f => f.c && !/ПАР/i.test(f.c)); // чистый пар не засеян - как в прошлых годах
+  const tot = sownF.reduce((a,f) => a + f.ha, 0);
+  return dates.map((d,k) => { let s = 0, h = 0; sownF.forEach(f => { const v = f.s && f.s[k]; if (v != null) { s += v*f.ha; h += f.ha; } }); return h > tot*.25 ? s/h : null; });
 }
 // линии по годам на общей оси "май - октябрь" (по дню года)
 function yearsChart(lines, H0){
@@ -1336,22 +1426,119 @@ function viewToday(){
       </div>
     </div>`}
 
-    ${yearChart() ? `<div class="sec"><h2>Сезоны по годам</h2><div class="card chart">${yearChart()}<p class="note" style="margin-top:8px">Средняя зелень по засеянным полям хозяйства по снимкам спутника. Когда придут снимки ${NX} года, рядом встанет новая линия, и будет видно, идёт сезон лучше или хуже прошлых.</p></div></div>` : ""}
+    ${yearChart() ? `<div class="sec"><h2>Сезоны по годам</h2><div class="card chart">${yearChart()}<p class="note" style="margin-top:8px">Средняя зелень по засеянным полям хозяйства по снимкам спутника. Когда придут снимки ${NX} года, рядом встанет новая линия, и будет видно, идёт сезон лучше или хуже прошлых. Зелень на снимках - не урожай: по ней видно, как росли поля, но не сколько собрали.</p></div></div>` : ""}
   </section>`;
   app.querySelectorAll(".tile b").forEach(b => countUp(b, +b.dataset.n));
   const bind = r => { bindItems(r); bindPhotos(r); r.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go)); };
   bind(app);
   const more = $("#dmore"); if (more) more.onclick = () => { $("#dlist").insertAdjacentHTML("beforeend", attn.slice(3).map(f => decisionCard(f, false)).join("")); bind($("#dlist")); more.remove(); };
 }
+// ---------- вкладка "Сейчас": текущий сезон по ходу дела (dashboard_live.py) ----------
+const LIVE = BASE.live || null;
+const LST = {ok:"норма", warn:"присмотреться", bad:"проблема", none:"без посева", wait:"рано оценивать", done:"убрано", skip:"не оцениваем"};
+const LCOL = {ok:"ok", warn:"warn", bad:"bad", none:"none", wait:"none", done:"p3", skip:"none"};
+function liveChart(f){
+  const ds = LIVE.dates, cm = LIVE.cm[f.c] || [], n = ds.length; if (n < 2) return "";
+  const W = 320, H = 120, x = k => 8 + k*(W-16)/(n-1), y = v => H - 10 - Math.max(0, Math.min(1, v))*(H-20);
+  const line = (arr, cls) => { let d = "", up = false; arr.forEach((v,k) => { if (v == null) { up = false; return; } d += (up ? "L" : "M") + x(k).toFixed(1) + "," + y(v).toFixed(1); up = true; }); return d ? `<path d="${d}" fill="none" ${cls}/>` : ""; };
+  const dots = (f.s || []).map((v,k) => v == null ? "" : `<circle cx="${x(k).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.6" fill="var(--${LCOL[f.st]==="none"?"accent":LCOL[f.st]})"/>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:520px;display:block" role="img" aria-label="Зелень поля по снимкам">
+    <line x1="8" x2="${W-8}" y1="${y(.6)}" y2="${y(.6)}" stroke="var(--line)" stroke-dasharray="3 3"/>
+    ${line(cm, 'stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"')}${line(f.s || [], 'stroke="var(--fg)" stroke-width="2"')}${dots}
+    <text x="8" y="12" font-size="10" fill="var(--muted)">${shortD(ds[0])}</text><text x="${W-8}" y="12" font-size="10" fill="var(--muted)" text-anchor="end">${shortD(ds[n-1])}</text></svg>
+    <p class="note" style="margin-top:4px">Сплошная линия - зелень этого поля по снимкам спутника, пунктир - середина полей ${esc(cap(f.c).toLowerCase())}. Горизонтальная черта - 0,6 (густой посев).</p>`;
+}
+// миниатюры: первые 8 + кнопка "ещё N фото" (листание в окне фото - по всем)
+function livePhotos(list){
+  const btn = k => photoBtn(k).replace("<button ", `<button data-list="${list.join(",")}" `);
+  return `<div class="photos" style="margin-top:6px">${list.slice(0,8).map(btn).join("")}${list.length > 8 ? `<button class="morep" data-livemore="${list.join(",")}">ещё ${list.length-8} фото</button>` : ""}</div>`;
+}
+function bindLiveMore(root){ root.querySelectorAll("[data-livemore]").forEach(b => b.onclick = () => { const list = b.dataset.livemore.split(",").map(Number), box = b.parentNode;
+  b.remove(); box.insertAdjacentHTML("beforeend", list.slice(8).map(k => photoBtn(k).replace("<button ", `<button data-list="${list.join(",")}" `)).join("")); bindPhotos(box); }); }
+function liveCard(i){
+  const f = LIVE.fields[i], why = f.gap != null ? `${f.gap < 0 ? "ниже" : "выше"} соседей той же культуры на ${nf(Math.abs(f.gap), 2)} (снимок ${fmtD(f.gd)})` : "";
+  const w = (f.w || []).slice().reverse().slice(0, 6), ph = f.ph || [];
+  return `<div class="card stack" id="nowcard" style="gap:10px">
+    <div style="display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center"><h3 style="margin:0">${esc(f.n)}</h3><span class="chip" style="--c:var(--${LCOL[f.st]})">${LST[f.st]}</span><span class="muted" style="font-size:13px">${esc(cap(f.c))}${f.ha ? `, ${nf(f.ha)} га` : ""}${f.sow ? `, сев ${fmtD(f.sow)}` : ""}${f.end ? `, убрано ${fmtD(f.end)}` : ""}</span></div>
+    ${why ? `<p style="margin:0">${why}.${f.pst && f.pst !== f.st ? ` Неделю назад: ${LST[f.pst]}.` : ""}</p>` : ""}
+    ${liveChart(f)}
+    ${w.length ? `<div><b>Последние работы</b><ul class="journal">${w.map(r => `<li><time>${shortD(r[0])}</time><span></span><span>${esc(r[1])}</span><span></span>${r[2] ? `<span class="who">${esc(r[2])}</span>` : ""}</li>`).join("")}</ul></div>` : `<p class="note">В журнале работ за этот сезон записей по полю нет.</p>`}
+    ${ph.length ? `<div><b>Фото дрона (${ph.length})</b>${livePhotos(ph)}</div>` : `<p class="note">В этом сезоне дрон над полем не летал.</p>`}
+  </div>`;
+}
+function viewNow(){
+  if (!LIVE) return viewToday();
+  const L = LIVE, FL = L.fields, last = L.dates[L.dates.length-1];
+  const by = k => FL.map((f,i) => i).filter(i => FL[i].st === k), haOf = a => a.reduce((s,i) => s + (FL[i].ha || 0), 0);
+  const bad = by("bad"), warn = by("warn"), ok = by("ok");
+  const attn = bad.concat(warn).sort((a,b) => (FL[a].st === FL[b].st ? 0 : FL[a].st === "bad" ? -1 : 1) || (FL[a].gap - FL[b].gap));
+  const newPh = [...new Set(FL.flatMap(f => f.ph || []))].filter(k => M.photos[k] && M.photos[k].d > L.week_from);
+  const spotsBy = {}; (L.spots || []).forEach(s => (spotsBy[s.fi] ||= []).push(s));
+  // начальный вид - основная часть хозяйства (одиночные дальние поля не сжимают карту)
+  const cxy = FL.filter(f => f.g.length).map(f => { const b = bbox(f.g); return [(b[0]+b[2])/2, (b[1]+b[3])/2]; });
+  const bb = qbox(cxy, .1, .9), pad = 4, vb0 = [bb[0]-pad, bb[1]-pad, bb[2]-bb[0]+2*pad, bb[3]-bb[1]+2*pad];
+  const ab = bbox(FL.flatMap(f => f.g)), vbAll = [ab[0]-pad, ab[1]-pad, ab[2]-ab[0]+2*pad, ab[3]-ab[1]+2*pad];
+  { const h1 = document.getElementById("h1"); if (h1) h1.textContent = `КХ Тритикум: сезон ${L.year}`; }
+  const row = i => { const f = FL[i], sp = spotsBy[i] || []; return `<button class="btn" data-now="${i}" style="justify-content:space-between;width:100%;border-radius:10px;text-align:left"><span><span class="chip" style="--c:var(--${LCOL[f.st]})">${LST[f.st]}</span> <b>${esc(f.n)}</b> <span class="muted">${esc(cap(f.c).toLowerCase())}${f.ha ? `, ${nf(f.ha)} га` : ""}</span></span><span class="muted" style="font-weight:400">${f.gap != null ? `ниже соседей на ${nf(-f.gap, 2)}` : ""}${sp.length ? `, ${sp.length} ${wd(sp.length,"пятно")}` : ""}${(f.ph||[]).length ? `, фото ${f.ph.length}` : ""}</span></button>`; };
+  const chips = arr => arr.map(i => `<button class="btn" data-now="${i}">${esc(FL[i].n)}</button>`).join("");
+  app.innerHTML = `<section class="view">
+    ${L.test ? `<p class="caveat"><b>Проба.</b> Так вкладка выглядела бы ${fmtD(L.asof)} ${L.year} года, по снимкам и журналу до этой даты. В сезон здесь будут свежие данные.</p>` : ""}
+    <div class="card todaybox">
+      <h3>Сезон ${L.year} сейчас</h3>
+      <div class="tiles t3 reveal">
+        <button class="tile ok" data-jump="1"><b data-n="${ok.length}">0</b><span>в норме, ${nf(haOf(ok))} га</span></button>
+        <button class="tile warn" data-jump="1"><b data-n="${warn.length}">0</b><span>присмотреться, ${nf(haOf(warn))} га</span></button>
+        <button class="tile bad" data-jump="1"><b data-n="${bad.length}">0</b><span>проблема, ${nf(haOf(bad))} га</span></button>
+      </div>
+      <p class="note" style="max-width:none">Последний снимок спутника: ${fmtD(last)}. Цвет поля - сравнение с полями той же культуры, посеянными в ту же неделю. Это предположение по снимку, решение - после осмотра поля.</p>
+      ${L.ripen ? `<p class="caveat" style="margin:0">Идёт созревание: поля зреют в разное время, поэтому сравнение менее точное и "проблему" мы не ставим, только "присмотреться".</p>` : ""}
+    </div>
+    <div class="sec"><h2>Что нового за неделю</h2><div class="card stack" style="gap:10px">
+      <p style="margin:0">${L.news.new_dates.length ? `Новые снимки: ${L.news.new_dates.map(shortD).join(", ")}.` : "Новых снимков за неделю нет (облачно или ещё не скачаны)."}</p>
+      ${L.news.worse.length ? `<div><b>Стали хуже: ${L.news.worse.length} ${wd(L.news.worse.length,"поле")}</b><div class="btnrow" style="margin-top:6px">${chips(L.news.worse.slice(0,12))}</div></div>` : ""}
+      ${L.news.better.length ? `<div><b>Выправились: ${L.news.better.length} ${wd(L.news.better.length,"поле")}</b><div class="btnrow" style="margin-top:6px">${chips(L.news.better.slice(0,12))}</div></div>` : ""}
+      ${newPh.length ? `<div><b>Фото дрона за неделю: ${newPh.length}</b>${livePhotos(newPh)}</div>` : ""}
+    </div></div>
+    <div class="sec"><h2>Карта на ${fmtD(last)}</h2><div class="mapbox" id="nowmap"><svg viewBox="${vb0.join(" ")}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Поля по светофору">
+      ${FL.map((f,i) => `<path class="fpath" data-now="${i}" d="${pathOf(f.g)}" style="fill:var(--${LCOL[f.st]})"><title>${esc(f.n)}: ${LST[f.st]}</title></path>`).join("")}
+      ${(L.spots || []).map(s => `<path d="${pathOf(s.g)}" fill="none" stroke="var(--fg)" stroke-width="2" vector-effect="non-scaling-stroke" pointer-events="none"/>`).join("")}
+    </svg><div class="zoom"><button data-nz="in" aria-label="Приблизить">+</button><button data-nz="out" aria-label="Отдалить">&minus;</button><button data-nz="all" aria-label="Всё хозяйство" title="Показать всё хозяйство" style="font-size:13px">&#x2922;</button></div></div><p class="note">Нажмите на поле - его карточка откроется сразу под картой. Карту можно двигать пальцем или мышью. Обведены слабые места внутри полей.</p></div>
+    <div id="nowhost"></div>
+    <div class="sec" id="nowlist"><div class="shead"><h2>Требуют внимания</h2><span class="muted" style="font-size:13px">${attn.length} ${wd(attn.length,"поле")}</span></div>
+      <div class="stack" style="gap:6px">${attn.slice(0,15).map(row).join("") || `<p class="note">Сейчас отстающих полей нет.</p>`}</div>
+      ${attn.length > 15 ? `<button class="more" id="nowmore">Ещё ${attn.length-15} ${wd(attn.length-15,"поле")}</button>` : ""}</div>
+  </section>`;
+  app.querySelectorAll(".tile b").forEach(b => countUp(b, +b.dataset.n));
+  const open = i => { const h = $("#nowhost"); h.innerHTML = `<div class="sec">${liveCard(i)}</div>`; bindPhotos(h); bindLiveMore(h); h.scrollIntoView({behavior: reduce ? "auto" : "smooth", block:"start"}); };
+  const bind = r => { r.querySelectorAll("[data-now]").forEach(b => b.onclick = () => open(+b.dataset.now)); bindPhotos(r); bindLiveMore(r); };
+  bind(app);
+  app.querySelectorAll("[data-jump]").forEach(b => b.onclick = () => $("#nowlist").scrollIntoView({behavior: reduce ? "auto" : "smooth"}));
+  { // карта: кнопки +/- и перетаскивание
+    const svg = $("#nowmap svg"); let v = vb0.slice(), drag = null, moved = false;
+    const set = n => { v = n; svg.setAttribute("viewBox", v.join(" ")); };
+    const zoom = k => set([v[0] + v[2]*(1-k)/2, v[1] + v[3]*(1-k)/2, v[2]*k, v[3]*k]);
+    app.querySelectorAll("[data-nz]").forEach(b => b.onclick = () => b.dataset.nz === "in" ? zoom(.6) : b.dataset.nz === "out" ? zoom(1/.6) : set(vbAll.slice()));
+    svg.addEventListener("pointerdown", e => { drag = [e.clientX, e.clientY, v.slice()]; moved = false; });
+    svg.addEventListener("pointermove", e => { if (!drag) return; const r = svg.getBoundingClientRect(), s = Math.max(drag[2][2]/r.width, drag[2][3]/r.height);
+      const dx = (e.clientX - drag[0])*s, dy = (e.clientY - drag[1])*s; if (Math.abs(e.clientX-drag[0]) + Math.abs(e.clientY-drag[1]) > 4) moved = true;
+      set([drag[2][0]-dx, drag[2][1]-dy, drag[2][2], drag[2][3]]); });
+    const up = () => { drag = null; }; svg.addEventListener("pointerup", up); svg.addEventListener("pointerleave", up);
+    svg.addEventListener("click", e => { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+  }
+  const more = $("#nowmore"); if (more) more.onclick = () => { const box = more.previousElementSibling; box.insertAdjacentHTML("beforeend", attn.slice(15).map(row).join("")); bind(box); more.remove(); };
+}
 // ---------- маршруты ----------
 function go(h){ if (location.hash.slice(1) === h) route(); else location.hash = h; }
 function route(){
   stop(); closeSheet(); if (!mapState.fs) mapState.pick = null;
   if (mapState.fs) { mapState.fs = false; mapState.crop = null; mapState.pick = null; document.body.style.overflow = ""; document.body.classList.remove("mapfs"); mapState.attn = false; closeSheet(); document.onkeydown = null; try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {} }
-  const h = location.hash.slice(1) || "today";
+  const h = location.hash.slice(1) || (LIVE && !PAST ? "now" : "today");
   const tab = h.startsWith("f-") ? null : h;
   document.querySelectorAll('nav.tabs [role="tab"]').forEach(b => b.setAttribute("aria-selected", b.dataset.tab === (tab === "rec-q" ? "rec" : tab || "today")));
+  { const nb = document.querySelector('nav.tabs [data-tab="now"]'); if (nb) nb.hidden = !LIVE;
+    const h1 = document.getElementById("h1"); if (h1) h1.textContent = `КХ Тритикум: сезон ${YR}`; }
   if (h.startsWith("f-")) viewField(+h.slice(2));
+  else if (h === "now") viewNow();
   else if (h === "season") viewSeason();
   else if (h === "crops") viewCrops();
   else if (h === "photos") viewPhotos();
